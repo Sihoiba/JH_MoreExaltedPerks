@@ -42,11 +42,31 @@ register_blueprint "exalted_soldier_bayonette"
 	}
 }
 
+register_blueprint "perk_he_blast_shield"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		status = "BLASTGUARD",
+		sdesc  = "Reduces splash damage by 75%",
+	},	
+	attributes = {
+		splash_mod = 0.25,
+	},
+	callbacks = {
+		on_activate = [=[
+			function( self, entity )				
+				entity:attach( "perk_he_blast_shield" )
+			end		
+		]=],
+	},
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
 	local exalted_traits = {
-		{ "exalted_soldier_bayonette", },
+		--{ "exalted_soldier_bayonette", },
+		{ "perk_he_blast_shield", },
 	}
 	if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
 		make_exalted( entity, 1, exalted_traits )

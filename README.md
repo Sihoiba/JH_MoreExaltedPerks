@@ -2,6 +2,7 @@
 Adds several new exalted perks to add more variety to the experience (especially inferno).
 
 * BAYONETTE - formers only. Changes their normal ranged weapon based melee attack, to a 20 damage piercing melee attack.
+* BLASTGUARD - formers only. Reduces splash damage by 75%
 
 ## Installing
 
