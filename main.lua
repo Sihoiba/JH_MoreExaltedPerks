@@ -1,3 +1,11 @@
+function insertFlags( flag )
+	if entity and entity.flags and entity.flags.data then
+		local flags = entity.flags.data
+		table.insert(flags, flag)
+		entity.flags.data = flags
+	end
+end
+
 register_blueprint "runtime_inventory_check"
 {
     flags = { EF_NOPICKUP },
@@ -55,20 +63,18 @@ register_blueprint "exalted_soldier_blast_shield"
 	callbacks = {
 		on_activate = [=[
 			function( self, entity )				
-				entity:attach( "perk_he_blast_shield" )
+				entity:attach( "exalted_soldier_blast_shield" )
 			end		
 		]=],
 	},
 }
 
-
-
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
 	local exalted_traits = {
-		--{ "exalted_soldier_bayonette", },
-		-- { "exalted_soldier_blast_shield", },
+		{ "exalted_soldier_bayonette", },
+		{ "exalted_soldier_blast_shield", },
 	}
 	if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
 		make_exalted( entity, 1, exalted_traits )
