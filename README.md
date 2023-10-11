@@ -16,7 +16,7 @@ Adds several new exalted perks to add more variety to the experience (especially
 * PRESSURING - Increases players weapon swap, reload and item use time when in sight.
 * RADIOACTIVE - Aura that increases damage taken.
 * SCORCHING - Demon only. Enemies spread flame patches around the level and are fire immune, but weak to cold.
-* SPIKEY - TODO - Demon Only. Returns melee damage on hit.
+* SPIKEY - Demon Only. Returns melee damage on hit.
 * TAINTED - Non-Robot only. Enemies if not gibbed respawn as exalted a short time after death. Aka Nightmare mode on random enemies.
 * TRIGGERHAPPY - Rapid fire weapons only. Fires an extra round in the burst.
 * VAMPIRIC - Heals when it deals damage based on damage dealt.

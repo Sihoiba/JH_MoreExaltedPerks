@@ -319,12 +319,12 @@ register_blueprint "mod_exalted_phasing"
         ]],     
         on_action = [[
             function ( self, entity, time_passed, last )
-				local level = world:get_level()
-				local player = world:get_player()
+                local level = world:get_level()
+                local player = world:get_player()
                 if time_passed > 0 and entity.target and entity.target.entity and entity.target.entity == player and level:can_see_entity( entity, entity.target.entity, 8 ) then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
-					local entityPos = world:get_position( entity )
+                    local entityPos = world:get_position( entity )
                     if sattr.counter > 500 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
@@ -350,9 +350,9 @@ register_blueprint "mod_exalted_polluting"
     },  
     attributes = {      
         counter = 0,
-		resist = {
-			acid   = 100,		
-		},
+        resist = {
+            acid   = 100,       
+        },
     },
     callbacks = {
         on_activate = [[
@@ -362,23 +362,23 @@ register_blueprint "mod_exalted_polluting"
         ]],     
         on_action = [[
             function ( self, entity, time_passed, last )
-				local level = world:get_level()
-				local player = world:get_player()
+                local level = world:get_level()
+                local player = world:get_player()
                 if time_passed > 0 then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
-					local entityPos = world:get_position( entity )
+                    local entityPos = world:get_position( entity )
                     if sattr.counter > 150 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
-							ui:spawn_fx( entity, "ps_broken_sparks", entity )
+                            ui:spawn_fx( entity, "ps_broken_sparks", entity )
                             local pool = level:get_entity( t, "acid_pool" )
-							if not pool then
-								pool = level:place_entity( "acid_pool", t )
-							end
-							pool.attributes.acid_amount = 10
-							pool.lifetime.time_left = math.max( pool.lifetime.time_left, 1000 + math.random(100) )
+                            if not pool then
+                                pool = level:place_entity( "acid_pool", t )
+                            end
+                            pool.attributes.acid_amount = 10
+                            pool.lifetime.time_left = math.max( pool.lifetime.time_left, 1000 + math.random(100) )
                         end 
                     end
                 end
@@ -396,10 +396,10 @@ register_blueprint "mod_exalted_scorching"
     },  
     attributes = {      
         counter = 0,
-		resist = {			
-			ignite = 100,
-			cold   = -100
-		},
+        resist = {          
+            ignite = 100,
+            cold   = -100
+        },
     },
     callbacks = {
         on_activate = [[
@@ -409,18 +409,18 @@ register_blueprint "mod_exalted_scorching"
         ]],     
         on_action = [[
             function ( self, entity, time_passed, last )
-				local level = world:get_level()
-				local player = world:get_player()
+                local level = world:get_level()
+                local player = world:get_player()
                 if time_passed > 0 then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
-					local entityPos = world:get_position( entity )
+                    local entityPos = world:get_position( entity )
                     if sattr.counter > 150 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
-							ui:spawn_fx( entity, "burning_smoke", entity )					
-                            gtk.place_flames( t, 10, 1000 + math.random(100) )							
+                            ui:spawn_fx( entity, "burning_smoke", entity )                  
+                            gtk.place_flames( t, 10, 1000 + math.random(100) )                          
                         end 
                     end
                 end
@@ -450,12 +450,12 @@ register_blueprint "buff_pressured"
     },
     ui_buff = {
         color = LIGHTRED,
-		priority = -1,
+        priority = -1,
     },
     attributes = {
-		reload_time	= 1.5,
-		swap_time = 1.25,
-		use_time = 1.5,		
+        reload_time = 1.5,
+        swap_time = 1.25,
+        use_time = 1.5,     
     },
 }
 
@@ -472,38 +472,38 @@ register_blueprint "mod_exalted_pressuring"
                 entity:attach( "mod_exalted_pressuring" )              
             end     
         ]],   
-		on_post_command = [=[
-			function ( self, actor, cmt, tgt, time )
-				local level = world:get_level()
-				for b in level:targets( actor, 32 ) do 
-					if b.data then
-						local data = b.data
-						if data.ai and data.ai.group == "player" then
-							world:add_buff( b, "buff_pressured", 101, true )
-						end
-					end
-				end
-			end
-		]=],
-	}
+        on_post_command = [=[
+            function ( self, actor, cmt, tgt, time )
+                local level = world:get_level()
+                for b in level:targets( actor, 32 ) do 
+                    if b.data then
+                        local data = b.data
+                        if data.ai and data.ai.group == "player" then
+                            world:add_buff( b, "buff_pressured", 101, true )
+                        end
+                    end
+                end
+            end
+        ]=],
+    }
 }
 
 register_blueprint "scream"
 {
-	attributes = {
-		damage     = 0,
-		explosion  = -1,		
-		gib_factor = 0.0,
-	},
-	weapon = {
-		group       = "env",
-		damage_type = "impact",
-		natural     = true,
-		fire_sound  = "scream",
-	},
-	noise = {
-		use = 25,
-	},
+    attributes = {
+        damage     = 0,
+        explosion  = -1,        
+        gib_factor = 0.0,
+    },
+    weapon = {
+        group       = "env",
+        damage_type = "impact",
+        natural     = true,
+        fire_sound  = "scream",
+    },
+    noise = {
+        use = 25,
+    },
 }
 
 register_blueprint "mod_exalted_screamer"
@@ -516,29 +516,29 @@ register_blueprint "mod_exalted_screamer"
     callbacks = {
         on_activate = [[
             function( self, entity )
-				local attr = entity.attributes
-		        entity.health.current = math.ceil( attr.health * 1.25 )
+                local attr = entity.attributes
+                entity.health.current = math.ceil( attr.health * 1.25 )
                 entity:attach( "mod_exalted_screamer" )              
             end     
         ]],   
-		on_post_command = [=[
-			function ( self, actor, cmt, tgt, time )
-				local level = world:get_level()
-				for b in level:targets( actor, 32 ) do 
-					if b.data then
-						local data = b.data
-						if data.ai and data.ai.group == "player" then
-							local p   = actor:get_position()
-							local w   = world:create_entity( "scream" )
-							actor:attach( w )
-							world:get_level():fire( actor, p, w )
-							world:destroy( w )
-						end
-					end
-				end
-			end
-		]=],
-	}
+        on_post_command = [=[
+            function ( self, actor, cmt, tgt, time )
+                local level = world:get_level()
+                for b in level:targets( actor, 32 ) do 
+                    if b.data then
+                        local data = b.data
+                        if data.ai and data.ai.group == "player" then
+                            local p   = actor:get_position()
+                            local w   = world:create_entity( "scream" )
+                            actor:attach( w )
+                            world:get_level():fire( actor, p, w )
+                            world:destroy( w )
+                        end
+                    end
+                end
+            end
+        ]=],
+    }
 }
 
 register_blueprint "mod_exalted_crit_defence"
@@ -561,15 +561,15 @@ register_blueprint "mod_exalted_crit_defence"
 }
 
 register_blueprint "mod_exalted_perk_triggerhappy"
-{	
+{   
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "Triggerhappy",
-		desc = "increases shots by 1",
-	},
-	attributes = {
-		shots = 1,
-	},
+        desc = "increases shots by 1",
+    },
+    attributes = {
+        shots = 1,
+    },
 }
 
 register_blueprint "mod_exalted_triggerhappy"
@@ -582,56 +582,56 @@ register_blueprint "mod_exalted_triggerhappy"
     callbacks = {
         on_activate = [=[
             function( self, entity )                                
-				for c in ecs:children( entity ) do
+                for c in ecs:children( entity ) do
                     if c.weapon and c.attributes and c.attributes.shots > 1 then
-						entity:attach( "mod_exalted_triggerhappy" )
+                        entity:attach( "mod_exalted_triggerhappy" )
                         c:attach("mod_exalted_perk_triggerhappy")
                     end
                 end
             end     
         ]=],
-		on_die = [=[
+        on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
-				for c in ecs:children( entity ) do
+                for c in ecs:children( entity ) do
                     if c.weapon and c.attributes and c.attributes.shots > 1 then
-						for cc in ecs:children( c ) do
-							if cc:get_name() == "Triggerhappy" then
-								world:destroy(cc)
-							end
-						end	
+                        for cc in ecs:children( c ) do
+                            if cc:get_name() == "Triggerhappy" then
+                                world:destroy(cc)
+                            end
+                        end 
                     end
                 end
-			end
-		]=]
+            end
+        ]=]
     },
 }
 
 register_blueprint "buff_irradiated"
 {
-	flags = { EF_NOPICKUP }, 
-	text = {
-		name    = "Irradiated",
-		desc    = "increases damage taken by {!+10%}/level",
-	},
-	callbacks = {
-		on_attach = [[
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name    = "Irradiated",
+        desc    = "increases damage taken by {!+10%}/level",
+    },
+    callbacks = {
+        on_attach = [[
             function ( self, target )
-				nova.log("Attached irradiated")
-			end
-		]],
-		on_post_command = [[
-			function ( self, actor, cmt, tgt, time )
-				world:callback( self )
-			end
-		]],
-		on_callback = [[
-			function ( self )
-				local time_left = self.lifetime.time_left				
-				local level = math.min( math.floor( time_left / 300 ) + 1, 10 )
-				self.attributes.damage_mod = 1.0 + (0.1 * level)
-				self.attributes.percentage = level * 10
-			end
-		]],
+                nova.log("Attached irradiated")
+            end
+        ]],
+        on_post_command = [[
+            function ( self, actor, cmt, tgt, time )
+                world:callback( self )
+            end
+        ]],
+        on_callback = [[
+            function ( self )
+                local time_left = self.lifetime.time_left               
+                local level = math.min( math.floor( time_left / 300 ) + 1, 10 )
+                self.attributes.damage_mod = 1.0 + (0.1 * level)
+                self.attributes.percentage = level * 10
+            end
+        ]],
         on_die = [[
             function ( self )   
                 world:mark_destroy( self )
@@ -642,118 +642,118 @@ register_blueprint "buff_irradiated"
                 world:mark_destroy( self )
             end
         ]],
-	},
-	attributes = {
-		damage_mod = 1.1,
-		percentage = 10
-	},
-	ui_buff = {
-		color = LIGHTGREEN,
-		attribute = "percentage",
-	},
+    },
+    attributes = {
+        damage_mod = 1.1,
+        percentage = 10
+    },
+    ui_buff = {
+        color = LIGHTGREEN,
+        attribute = "percentage",
+    },
 }
 
 register_blueprint "mod_exalted_radioactive_aura"
 {
-	flags = { EF_NOPICKUP }, 	
-	callbacks = {
-		on_timer = [[
-			function ( self, first )
-				if first then return 1 end
-				if not self then return 0 end
-				local level    = world:get_level()
-				local parent   = self:parent()
-				if not level:is_alive( parent ) then 
-					world:mark_destroy( self )
-					return 0
-				end
-				local position = world:get_position( parent )
-				local ar       = area.around( position, 1 )
-				ar:clamp( level:get_area() )
+    flags = { EF_NOPICKUP },    
+    callbacks = {
+        on_timer = [[
+            function ( self, first )
+                if first then return 1 end
+                if not self then return 0 end
+                local level    = world:get_level()
+                local parent   = self:parent()
+                if not level:is_alive( parent ) then 
+                    world:mark_destroy( self )
+                    return 0
+                end
+                local position = world:get_position( parent )
+                local ar       = area.around( position, 1 )
+                ar:clamp( level:get_area() )
 
-				for c in ar:coords() do
-					for e in level:entities( c ) do
-						if e and e.data and e.data.ai and (e.data.ai.group == "player" or e.data.ai.group == "cri") then
-							world:add_buff( e, "buff_irradiated", 300 )
-						end
-					end
-				end
-				return 50
-			end
-		]],
-	},
+                for c in ar:coords() do
+                    for e in level:entities( c ) do
+                        if e and e.data and e.data.ai and (e.data.ai.group == "player" or e.data.ai.group == "cri") then
+                            world:add_buff( e, "buff_irradiated", 300 )
+                        end
+                    end
+                end
+                return 50
+            end
+        ]],
+    },
 }
 
 register_blueprint "mod_exalted_radioactive"
 {
-	flags = { EF_NOPICKUP }, 
-	text = {
-		status = "RADIOACTIVE",
-		sdesc  = "Increases damage recieved on nearby entities",
-	},
-	callbacks = {
-		on_activate = [=[
-			function( self, entity )
-				entity:attach( "mod_exalted_radioactive" )
-				entity:equip( "mod_exalted_radioactive_aura" )
-			end
-		]=],
-	},	
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "RADIOACTIVE",
+        sdesc  = "Increases damage recieved on nearby entities",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )
+                entity:attach( "mod_exalted_radioactive" )
+                entity:equip( "mod_exalted_radioactive_aura" )
+            end
+        ]=],
+    },  
 }
 
 register_blueprint "mod_exalted_dodge_buff"
 {
-	flags = { EF_NOPICKUP }, 
-	text = {
-		name = "DODGE",
-		desc = "increases evasion",
-	},
-	ui_buff = {
-		color     = LIGHTBLUE,
-		attribute = "evasion",
-		priority  = 100,
-	},
-	attributes = {
-		evasion = 0,
-	},
-	callbacks = {
-		on_action = [[
-			function ( self, entity, time_passed, last )
-				if time_passed > 0 then
-					local evasion = self.attributes.evasion
-					if evasion > 0 then
-						if last >= COMMAND_MOVE and last <= COMMAND_MOVE_F then
-							self.attributes.evasion = math.floor( evasion / 2 )
-						else
-							self.attributes.evasion = 0
-						end
-					end
-				end
-			end
-		]],
-		on_move = [[
-			function ( self, entity )
-				self.attributes.evasion = math.min( self.attributes.evasion + 50, 100 )
-			end
-		]],
-	},
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name = "DODGE",
+        desc = "increases evasion",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        attribute = "evasion",
+        priority  = 100,
+    },
+    attributes = {
+        evasion = 0,
+    },
+    callbacks = {
+        on_action = [[
+            function ( self, entity, time_passed, last )
+                if time_passed > 0 then
+                    local evasion = self.attributes.evasion
+                    if evasion > 0 then
+                        if last >= COMMAND_MOVE and last <= COMMAND_MOVE_F then
+                            self.attributes.evasion = math.floor( evasion / 2 )
+                        else
+                            self.attributes.evasion = 0
+                        end
+                    end
+                end
+            end
+        ]],
+        on_move = [[
+            function ( self, entity )
+                self.attributes.evasion = math.min( self.attributes.evasion + 50, 100 )
+            end
+        ]],
+    },
 }
 
 register_blueprint "mod_exalted_soldier_dodge"
 {
-	flags = { EF_NOPICKUP }, 
-	text = {
-		status = "DODGE",
-		sdesc  = "Increases evasion on move",
-	},
-	callbacks = {
-		on_activate = [=[
-			function( self, entity )
-				entity:attach( "mod_exalted_soldier_dodge" )
-				entity:equip( "mod_exalted_dodge_buff" )
-			end
-		]=],
-	},	
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "DODGE",
+        sdesc  = "Increases evasion on move",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )
+                entity:attach( "mod_exalted_soldier_dodge" )
+                entity:equip( "mod_exalted_dodge_buff" )
+            end
+        ]=],
+    },  
 }
 
 register_blueprint "apply_vampiric"
@@ -761,11 +761,11 @@ register_blueprint "apply_vampiric"
     callbacks = {
         on_damage = [[
             function ( unused, weapon, who, amount, source )
-                if who and who.data then                 					
+                if who and who.data then                                    
                     local target_max = who.attributes.health
-					local proportion = math.min( 0.2, amount/target_max )
-					local source_max = source.attributes.health
-					source.health.current = source.health.current + math.floor( proportion * source_max )					
+                    local proportion = math.min( 0.2, amount/target_max )
+                    local source_max = source.attributes.health
+                    source.health.current = source.health.current + math.floor( proportion * source_max )                   
                 end             
             end
         ]],
@@ -793,6 +793,32 @@ register_blueprint "mod_exalted_vampiric"
     },
 }
 
+register_blueprint "mod_exalted_spikey"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "SPIKEY",
+        sdesc  = "Deals damage when hit in melee",
+    }, 
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                
+                entity:attach( "mod_exalted_spikey" )                
+            end     
+        ]=],
+        on_receive_damage = [[
+            function ( self, entity, source, weapon, amount )
+                if amount == 0 or not weapon then return end
+                if weapon.weapon and weapon.weapon.type == world:hash("melee") then
+                    if source and source:flag( EF_TARGETABLE ) then
+                        world:get_level():apply_damage( entity, source, 10, ivec2(), "pierce" )                 
+                    end
+                end
+            end
+        ]],
+    }
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -802,15 +828,16 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_kw_blinding", },
         -- { "mod_exalted_respawn", },
         -- { "mod_exalted_phasing", },
-		-- { "mod_exalted_polluting", },
-		-- { "mod_exalted_scorching", },
-		-- { "mod_exalted_pressuring", }
-		-- { "mod_exalted_screamer", }
-		-- { "mod_exalted_crit_defence", }
-		-- { "mod_exalted_triggerhappy", },
-		-- { "mod_exalted_radioactive", },
-		-- { "mod_exalted_soldier_dodge", },
-		{ "mod_exalted_vampiric", },
+        -- { "mod_exalted_polluting", },
+        -- { "mod_exalted_scorching", },
+        -- { "mod_exalted_pressuring", }
+        -- { "mod_exalted_screamer", }
+        -- { "mod_exalted_crit_defence", }
+        -- { "mod_exalted_triggerhappy", },
+        -- { "mod_exalted_radioactive", },
+        -- { "mod_exalted_soldier_dodge", },
+        -- { "mod_exalted_vampiric", },
+        { "mod_exalted_spikey", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
