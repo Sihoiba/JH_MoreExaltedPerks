@@ -9,7 +9,7 @@ Adds several new exalted perks to add more variety to the experience (especially
 * CRITRESIST - Reduces incoming crit chance by 100%.
 * DODGE - Formers only. Gains slithering like effect.
 * DRAINING - Drains player resource on hit
-* EMPOWERED - TODO - Increases damage and speed by 10% every few turns
+* EMPOWERED - Increases damage by 10% and speed by 5% every few turns, to +100% damage and +50% speed
 * GATEKEEPER - TODO - Locks level exits until killed.
 * PHASING - Enemies in sight periodically teleport to a new nearby location
 * POLLUTING - Demon and robot only. Enemies spread acid pools around the level and are acid immune

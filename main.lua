@@ -1084,6 +1084,69 @@ register_blueprint "mod_exalted_draining"
     },
 }
 
+register_blueprint "mod_exalted_empowered_buff"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name    = "POWERING UP",
+        desc    = "increases damage dealt by {!+10%} and speed by !{5%} every few turns to +100% damage +50% speed",
+    },
+    callbacks = {
+        on_action = [[
+            function ( self, entity, time_passed, last )
+				local sattr = self.attributes
+				if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
+					sattr.encountered = true
+				end
+				if sattr.encountered then					
+					if time_passed > 0 and sattr.percentage < 100 then
+						sattr.counter = sattr.counter + time_passed                    
+						if sattr.counter > 500 then
+							sattr.counter = 0                       
+							sattr.damage_mult = sattr.damage_mult + 0.1
+							sattr.move_time = sattr.move_time - 0.05
+							sattr.percentage = sattr.percentage + 10
+						end
+					end
+				end	
+            end
+        ]],         
+        on_die = [[
+            function ( self )   
+                world:mark_destroy( self )
+            end
+        ]],
+    },
+    attributes = {
+        damage_mult = 1.0,
+        move_time = 1.0,
+        percentage = 0,
+        counter = 0,
+		encountered = false,
+    },
+    ui_buff = {
+        color = LIGHTGREEN,
+        attribute = "percentage",
+    },
+}
+
+register_blueprint "mod_exalted_empowered"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "EMPOWERED",
+        sdesc  = "Increases damage and speed every few turns",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )
+                entity:attach( "mod_exalted_empowered" )
+                entity:equip( "mod_exalted_empowered_buff" )
+            end
+        ]=],
+    },  
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -1101,10 +1164,11 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_triggerhappy", },
         -- { "mod_exalted_radioactive", },
         -- { "mod_exalted_soldier_dodge", },
-        { "mod_exalted_vampiric", },
+        -- { "mod_exalted_vampiric", },
         -- { "mod_exalted_spikey", },
         -- { "mod_exalted_adaptive", },
-        { "mod_exalted_draining", },
+        -- { "mod_exalted_draining", },
+        { "mod_exalted_empowered", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
