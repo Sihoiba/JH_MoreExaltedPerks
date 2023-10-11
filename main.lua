@@ -753,7 +753,7 @@ register_blueprint "mod_exalted_soldier_dodge"
 
 register_blueprint "apply_vampiric"
 {
-	text = {
+    text = {
         name    = "Apply Vampiric",
         desc = "heals on damage",
     },
@@ -1005,46 +1005,46 @@ register_blueprint "mod_exalted_adaptive"
 
 register_blueprint "apply_drain"
 {
-	text = {
+    text = {
         name    = "Apply Drain",
         desc = "Drains class skill",
     },
     callbacks = {
         on_damage = [[
             function ( unused, weapon, who, amount, source )
-				if who and who.data and who.data.is_player then
-					local klass = gtk.get_klass_id( who )
-					local resource
-					
-					if klass == "marine" then
-						nova.log("is marine")
-						resource = who:child( "resource_fury" )
-					elseif klass == "scout" then
-						resource = who:child( "resource_energy" )
-					elseif klass == "tech" then
-						resource = who:child( "resource_power" )
-					else				
-						local klass_hash = who.progression.klass
-						nova.log(klass_hash)
-						local klass_id   = world:resolve_hash( klass_hash )
-						nova.log(klass_id)
-						local k = blueprints[ klass_id ]
-						if not k or not k.klass or not k.klass.res then
-							return
-						end
-						resource = who:child( k.klass.res )
-					end
-					
-					if not resource then 
-						return
-					end
-					
-					local rattr = resource.attributes
-					if rattr.value > 0 then
-						nova.log("draining resource")
-						rattr.value = math.max( rattr.value - 2, 0 )
-					end
-				end	
+                if who and who.data and who.data.is_player then
+                    local klass = gtk.get_klass_id( who )
+                    local resource
+                    
+                    if klass == "marine" then
+                        nova.log("is marine")
+                        resource = who:child( "resource_fury" )
+                    elseif klass == "scout" then
+                        resource = who:child( "resource_energy" )
+                    elseif klass == "tech" then
+                        resource = who:child( "resource_power" )
+                    else                
+                        local klass_hash = who.progression.klass
+                        nova.log(klass_hash)
+                        local klass_id   = world:resolve_hash( klass_hash )
+                        nova.log(klass_id)
+                        local k = blueprints[ klass_id ]
+                        if not k or not k.klass or not k.klass.res then
+                            return
+                        end
+                        resource = who:child( k.klass.res )
+                    end
+                    
+                    if not resource then 
+                        return
+                    end
+                    
+                    local rattr = resource.attributes
+                    if rattr.value > 0 then
+                        nova.log("draining resource")
+                        rattr.value = math.max( rattr.value - 2, 0 )
+                    end
+                end 
             end
         ]],
     }
