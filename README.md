@@ -19,7 +19,7 @@ Adds several new exalted perks to add more variety to the experience (especially
 * SPIKEY - TODO - Demon Only. Returns melee damage on hit.
 * TAINTED - Non-Robot only. Enemies if not gibbed respawn as exalted a short time after death. Aka Nightmare mode on random enemies.
 * TRIGGERHAPPY - Rapid fire weapons only. Fires an extra round in the burst.
-* VAMPIRIC - TODO - Heals when it deals damage based on damage dealt.
+* VAMPIRIC - Heals when it deals damage based on damage dealt.
 
 ## Installing
 
