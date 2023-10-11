@@ -1,16 +1,21 @@
 # JH_MoreExaltedPerks
 Adds several new exalted perks to add more variety to the experience (especially inferno).
 
+* ADAPTING - TODO - Gains damage resistance based on the last damage type taken. 
 * ALERTING - Increased health and makes a loud noise when it sees the player to attract other enemies.
-* BAYONETTE - formers only. Changes their normal ranged weapon based melee attack, to a 20 damage piercing melee attack.
+* BAYONETTE - Formers only. Changes their normal ranged weapon based melee attack, to a 20 damage piercing melee attack.
 * BLASTGUARD - Reduces splash damage by 75%
 * BLINDING - Melee enemies only. Enemies inflict BLINDED status on hit.
-* IGNITING - Demon only. Enemies spread flame patches around the level and are fire immune
+* DRAINING - TODO - Drains player resource on hit
+* EMPOWERED - TODO - Increases damage and speed by 10% every few turns
+* GATEKEEPER - TODO - Locks level exits until killed.
 * PHASING - Enemies in sight periodically teleport to a new nearby location
-* POLLUTING - Enemies spread acid pools around the level and are acid immune
+* POLLUTING - Demon and robot only. Enemies spread acid pools around the level and are acid immune
 * PRESSURING - Increases players weapon swap, reload and item use time when in sight.
+* RADIOACTIVE - TODO - Aura that increases damage taken.
+* SCORCHING - Demon only. Enemies spread flame patches around the level and are fire immune, but weak to cold.
 * TAINTED - Non-Robot only. Enemies if not gibbed respawn as exalted a short time after death. Aka Nightmare mode on random enemies.
-
+* VAMPIRIC - TODO - Heals when it deals damage based on damage dealt.
 
 ## Installing
 

@@ -346,7 +346,7 @@ register_blueprint "mod_exalted_polluting"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "POLLUTING",
-        sdesc  = "Spreads acid around the level",
+        sdesc  = "Spreads acid around itself",
     },  
     attributes = {      
         counter = 0,
@@ -387,23 +387,24 @@ register_blueprint "mod_exalted_polluting"
     },
 }
 
-register_blueprint "mod_exalted_igniting"
+register_blueprint "mod_exalted_scorching"
 {
     flags = { EF_NOPICKUP }, 
     text = {
-        status = "IGNITING",
-        sdesc  = "Spreads fire around the level",
+        status = "SCORCHING",
+        sdesc  = "Spreads fire around itself",
     },  
     attributes = {      
         counter = 0,
 		resist = {			
-			ignite = 100,			
+			ignite = 100,
+			cold   = -100
 		},
     },
     callbacks = {
         on_activate = [[
             function( self, entity )                
-                entity:attach( "mod_exalted_igniting" )              
+                entity:attach( "mod_exalted_scorching" )              
             end     
         ]],     
         on_action = [[
@@ -501,7 +502,7 @@ register_blueprint "scream"
 		fire_sound  = "scream",
 	},
 	noise = {
-		use = 256,
+		use = 25,
 	},
 }
 
@@ -550,7 +551,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_respawn", },
         -- { "mod_exalted_phasing", },
 		-- { "mod_exalted_polluting", },
-		-- { "mod_exalted_igniting", },
+		-- { "mod_exalted_scorching", },
 		-- { "mod_exalted_pressuring", }
 		{ "mod_exalted_screamer", }
     }
