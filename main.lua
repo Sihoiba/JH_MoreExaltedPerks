@@ -756,6 +756,43 @@ register_blueprint "mod_exalted_soldier_dodge"
 	},	
 }
 
+register_blueprint "apply_vampiric"
+{
+    callbacks = {
+        on_damage = [[
+            function ( unused, weapon, who, amount, source )
+                if who and who.data then                 					
+                    local target_max = who.attributes.health
+					local proportion = math.min( 0.2, amount/target_max )
+					local source_max = source.attributes.health
+					source.health.current = source.health.current + math.floor( proportion * source_max )					
+                end             
+            end
+        ]],
+    }
+}
+
+register_blueprint "mod_exalted_vampiric"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "VAMPIRIC",
+        sdesc  = "Attacks heal the attacker based on damage dealt",
+    },  
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                
+                entity:attach( "mod_exalted_vampiric" )
+                for c in ecs:children( entity ) do
+                    if ( c.weapon ) then
+                        c:attach("apply_vampiric")
+                    end
+                end
+            end     
+        ]=]
+    },
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -772,7 +809,8 @@ function more_exalted_test.on_entity( entity )
 		-- { "mod_exalted_crit_defence", }
 		-- { "mod_exalted_triggerhappy", },
 		-- { "mod_exalted_radioactive", },
-		{ "mod_exalted_soldier_dodge", },
+		-- { "mod_exalted_soldier_dodge", },
+		{ "mod_exalted_vampiric", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
