@@ -541,6 +541,166 @@ register_blueprint "mod_exalted_screamer"
 	}
 }
 
+register_blueprint "mod_exalted_crit_defence"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "CRITRESIST",
+        sdesc  = "resists first 100% chance of critical hits",
+    },  
+    attributes = {
+        crit_defence = 100,
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                
+                entity:attach( "mod_exalted_crit_defence" )
+            end     
+        ]=]
+    },
+}
+
+register_blueprint "mod_exalted_perk_triggerhappy"
+{	
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name    = "Triggerhappy",
+		desc = "increases shots by 1",
+	},
+	attributes = {
+		shots = 1,
+	},
+}
+
+register_blueprint "mod_exalted_triggerhappy"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "TRIGGERHAPPY",
+        sdesc  = "increases shots fired by 1",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                                
+				for c in ecs:children( entity ) do
+                    if c.weapon and c.attributes and c.attributes.shots > 1 then
+						entity:attach( "mod_exalted_triggerhappy" )
+                        c:attach("mod_exalted_perk_triggerhappy")
+                    end
+                end
+            end     
+        ]=],
+		on_die = [=[
+            function( self, entity, killer, current, weapon, gibbed )
+				for c in ecs:children( entity ) do
+                    if c.weapon and c.attributes and c.attributes.shots > 1 then
+						for cc in ecs:children( c ) do
+							if cc:get_name() == "Triggerhappy" then
+								world:destroy(cc)
+							end
+						end	
+                    end
+                end
+			end
+		]=]
+    },
+}
+
+register_blueprint "buff_irradiated"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		name    = "Irradiated",
+		desc    = "increases damage taken by {!+10%}/level",
+	},
+	callbacks = {
+		on_attach = [[
+            function ( self, target )
+				nova.log("Attached irradiated")
+			end
+		]],
+		on_post_command = [[
+			function ( self, actor, cmt, tgt, time )
+				world:callback( self )
+			end
+		]],
+		on_callback = [[
+			function ( self )
+				local time_left = self.lifetime.time_left				
+				local level = math.min( math.floor( time_left / 300 ) + 1, 10 )
+				self.attributes.damage_mod = 1.0 + (0.1 * level)
+				self.attributes.percentage = level * 10
+			end
+		]],
+        on_die = [[
+            function ( self )   
+                world:mark_destroy( self )
+            end
+        ]],
+        on_enter_level = [[
+            function ( self )           
+                world:mark_destroy( self )
+            end
+        ]],
+	},
+	attributes = {
+		damage_mod = 1.1,
+		percentage = 10
+	},
+	ui_buff = {
+		color = LIGHTGREEN,
+		attribute = "percentage",
+	},
+}
+
+register_blueprint "mod_exalted_radioactive_aura"
+{
+	flags = { EF_NOPICKUP }, 	
+	callbacks = {
+		on_timer = [[
+			function ( self, first )
+				if first then return 1 end
+				if not self then return 0 end
+				local level    = world:get_level()
+				local parent   = self:parent()
+				if not level:is_alive( parent ) then 
+					world:mark_destroy( self )
+					return 0
+				end
+				local position = world:get_position( parent )
+				local ar       = area.around( position, 1 )
+				ar:clamp( level:get_area() )
+
+				for c in ar:coords() do
+					for e in level:entities( c ) do
+						if e and e.data and e.data.ai and (e.data.ai.group == "player" or e.data.ai.group == "cri") then
+							world:add_buff( e, "buff_irradiated", 300 )
+						end
+					end
+				end
+				return 50
+			end
+		]],
+	},
+}
+
+register_blueprint "mod_exalted_radioactive"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		status = "RADIOACTIVE",
+		sdesc  = "Increases damage recieved on nearby entities",
+	},
+	callbacks = {
+		on_activate = [=[
+			function( self, entity )
+				entity:attach( "mod_exalted_radioactive" )
+				entity:equip( "mod_exalted_radioactive_aura" )
+			end
+		]=],
+	},	
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -553,7 +713,10 @@ function more_exalted_test.on_entity( entity )
 		-- { "mod_exalted_polluting", },
 		-- { "mod_exalted_scorching", },
 		-- { "mod_exalted_pressuring", }
-		{ "mod_exalted_screamer", }
+		-- { "mod_exalted_screamer", }
+		-- { "mod_exalted_crit_defence", }
+		-- { "mod_exalted_triggerhappy", },
+		{ "mod_exalted_radioactive", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
