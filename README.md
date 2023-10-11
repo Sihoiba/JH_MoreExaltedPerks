@@ -7,7 +7,7 @@ Adds several new exalted perks to add more variety to the experience (especially
 * BLASTGUARD - Reduces splash damage by 75%
 * BLINDING - Melee enemies only. Enemies inflict BLINDED status on hit.
 * CRITRESIST - Reduces incoming crit chance by 100%.
-* DODGE - TODO - Formers only. Gains slithering like effect.
+* DODGE - Formers only. Gains slithering like effect.
 * DRAINING - TODO - Drains player resource on hit
 * EMPOWERED - TODO - Increases damage and speed by 10% every few turns
 * GATEKEEPER - TODO - Locks level exits until killed.

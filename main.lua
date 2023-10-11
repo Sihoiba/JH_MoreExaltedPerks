@@ -701,6 +701,61 @@ register_blueprint "mod_exalted_radioactive"
 	},	
 }
 
+register_blueprint "mod_exalted_dodge_buff"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		name = "DODGE",
+		desc = "increases evasion",
+	},
+	ui_buff = {
+		color     = LIGHTBLUE,
+		attribute = "evasion",
+		priority  = 100,
+	},
+	attributes = {
+		evasion = 0,
+	},
+	callbacks = {
+		on_action = [[
+			function ( self, entity, time_passed, last )
+				if time_passed > 0 then
+					local evasion = self.attributes.evasion
+					if evasion > 0 then
+						if last >= COMMAND_MOVE and last <= COMMAND_MOVE_F then
+							self.attributes.evasion = math.floor( evasion / 2 )
+						else
+							self.attributes.evasion = 0
+						end
+					end
+				end
+			end
+		]],
+		on_move = [[
+			function ( self, entity )
+				self.attributes.evasion = math.min( self.attributes.evasion + 50, 100 )
+			end
+		]],
+	},
+}
+
+register_blueprint "mod_exalted_soldier_dodge"
+{
+	flags = { EF_NOPICKUP }, 
+	text = {
+		status = "DODGE",
+		sdesc  = "Increases evasion on move",
+	},
+	callbacks = {
+		on_activate = [=[
+			function( self, entity )
+				entity:attach( "mod_exalted_soldier_dodge" )
+				entity:equip( "mod_exalted_dodge_buff" )
+			end
+		]=],
+	},	
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -716,7 +771,8 @@ function more_exalted_test.on_entity( entity )
 		-- { "mod_exalted_screamer", }
 		-- { "mod_exalted_crit_defence", }
 		-- { "mod_exalted_triggerhappy", },
-		{ "mod_exalted_radioactive", },
+		-- { "mod_exalted_radioactive", },
+		{ "mod_exalted_soldier_dodge", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
