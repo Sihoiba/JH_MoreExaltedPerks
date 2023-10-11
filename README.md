@@ -1,7 +1,7 @@
 # JH_MoreExaltedPerks
 Adds several new exalted perks to add more variety to the experience (especially inferno).
 
-* ADAPTING - TODO - Gains damage resistance based on the last damage type taken. 
+* ADAPTIVE - Gains damage resistance based on the last damage type taken. 
 * ALERTING - Increased health and makes a loud noise when it sees the player to attract other enemies.
 * BAYONETTE - Formers only. Changes their normal ranged weapon based melee attack, to a 20 damage piercing melee attack.
 * BLASTGUARD - Reduces splash damage by 75%

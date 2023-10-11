@@ -614,11 +614,6 @@ register_blueprint "buff_irradiated"
         desc    = "increases damage taken by {!+10%}/level",
     },
     callbacks = {
-        on_attach = [[
-            function ( self, target )
-                nova.log("Attached irradiated")
-            end
-        ]],
         on_post_command = [[
             function ( self, actor, cmt, tgt, time )
                 world:callback( self )
@@ -819,6 +814,178 @@ register_blueprint "mod_exalted_spikey"
     }
 }
 
+register_blueprint "mod_exalted_adaptive_impact_buff"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name = "ADAPT-IMPACT",
+        desc = "+75% impact resistance",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        priority  = 100,
+    },
+    attributes = {
+        resist = {
+            impact   = 75,
+        },
+    },
+    data = {
+        adaptive_buff = true,
+    },
+    callbacks = {
+        on_attach = [[
+            function ( self, target )
+                for c in ecs:children( target ) do  
+                    if c~= self and c.data and c.data.adaptive_buff then
+                        world:mark_destroy( c )
+                    end
+                end
+                world:flush_destroy()
+            end
+        ]],
+    },
+}
+
+register_blueprint "mod_exalted_adaptive_slash_buff"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name = "ADAPT-SLASH",
+        desc = "+75% slash resistance",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        priority  = 100,
+    },
+    attributes = {
+        resist = {
+            slash   = 75,
+        },
+    },
+    data = {
+        adaptive_buff = true,
+    },
+    callbacks = {
+        on_attach = [[
+            function ( self, target )
+                for c in ecs:children( target ) do
+                    if c~= self and c.data and c.data.adaptive_buff then
+                        world:mark_destroy( c )
+                    end
+                end
+                world:flush_destroy()
+            end
+        ]],
+    },
+}
+
+register_blueprint "mod_exalted_adaptive_pierce_buff"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name = "ADAPT-PIERCE",
+        desc = "+75% pierce resistance",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        priority  = 100,
+    },
+    attributes = {
+        resist = {
+            pierce   = 75,
+        },
+    },
+    data = {
+        adaptive_buff = true,
+    },
+    callbacks = {
+        on_attach = [[
+            function ( self, target )
+                for c in ecs:children( target ) do
+                    if c~= self and c.data and c.data.adaptive_buff then
+                        world:mark_destroy( c )
+                    end
+                end
+                world:flush_destroy()
+            end
+        ]],
+    },
+}
+
+register_blueprint "mod_exalted_adaptive_plasma_buff"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        name = "ADAPT-PLASMA",
+        desc = "+75% plasma resistance",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        priority  = 100,
+    },
+    attributes = {
+        resist = {
+            plasma   = 75,
+        },
+    },
+    data = {
+        adaptive_buff = true,
+    },
+    callbacks = {
+        on_attach = [[
+            function ( self, target )
+                for c in ecs:children( target ) do
+                    if c~= self and c.data and c.data.adaptive_buff then
+                        world:mark_destroy( c )
+                    end
+                end
+                world:flush_destroy()
+            end
+        ]],
+    },
+}
+
+register_blueprint "mod_exalted_adaptive"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "ADAPTIVE",
+        sdesc  = "Gains damage resistance to last weapon damage type hit by, clears when hit by different damage",
+    },   
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                
+                entity:attach( "mod_exalted_adaptive" )                
+            end     
+        ]=],
+        on_receive_damage = [[
+            function ( self, entity, source, weapon, amount )
+                if weapon and weapon.weapon then
+                    nova.log("adapting")
+                    if weapon.weapon.damage_type == world:hash("impact") then
+                        entity:attach("mod_exalted_adaptive_impact_buff")
+                    elseif weapon.weapon.damage_type == world:hash("pierce") then                       
+                        entity:attach("mod_exalted_adaptive_pierce_buff")       
+                    elseif weapon.weapon.damage_type == world:hash("plasma") then
+                        entity:attach("mod_exalted_adaptive_plasma_buff")
+                    elseif weapon.weapon.damage_type == world:hash("slash") then
+                        entity:attach("mod_exalted_adaptive_slash_buff")                    
+                    end                    
+                else
+                    nova.log("non weapon damage adaptation cleared")
+                    for c in ecs:children( entity ) do
+                        if c.data and c.data.adaptive_buff then
+                            world:mark_destroy( c )
+                        end
+                    end
+                    world:flush_destroy()
+                end
+            end
+        ]],
+    }
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -837,7 +1004,8 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_radioactive", },
         -- { "mod_exalted_soldier_dodge", },
         -- { "mod_exalted_vampiric", },
-        { "mod_exalted_spikey", },
+        -- { "mod_exalted_spikey", },
+        { "mod_exalted_adaptive", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
