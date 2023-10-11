@@ -753,6 +753,10 @@ register_blueprint "mod_exalted_soldier_dodge"
 
 register_blueprint "apply_vampiric"
 {
+	text = {
+        name    = "Apply Vampiric",
+        desc = "heals on damage",
+    },
     callbacks = {
         on_damage = [[
             function ( unused, weapon, who, amount, source )
@@ -784,6 +788,19 @@ register_blueprint "mod_exalted_vampiric"
                     end
                 end
             end     
+        ]=],
+        on_die = [=[
+            function( self, entity, killer, current, weapon, gibbed )
+                for c in ecs:children( entity ) do
+                    if c.weapon then
+                        for cc in ecs:children( c ) do
+                            if cc:get_name() == "Apply Vampiric" then
+                                world:destroy(cc)
+                            end
+                        end 
+                    end
+                end
+            end
         ]=]
     },
 }
@@ -986,6 +1003,87 @@ register_blueprint "mod_exalted_adaptive"
     }
 }
 
+register_blueprint "apply_drain"
+{
+	text = {
+        name    = "Apply Drain",
+        desc = "Drains class skill",
+    },
+    callbacks = {
+        on_damage = [[
+            function ( unused, weapon, who, amount, source )
+				if who and who.data and who.data.is_player then
+					local klass = gtk.get_klass_id( who )
+					local resource
+					
+					if klass == "marine" then
+						nova.log("is marine")
+						resource = who:child( "resource_fury" )
+					elseif klass == "scout" then
+						resource = who:child( "resource_energy" )
+					elseif klass == "tech" then
+						resource = who:child( "resource_power" )
+					else				
+						local klass_hash = who.progression.klass
+						nova.log(klass_hash)
+						local klass_id   = world:resolve_hash( klass_hash )
+						nova.log(klass_id)
+						local k = blueprints[ klass_id ]
+						if not k or not k.klass or not k.klass.res then
+							return
+						end
+						resource = who:child( k.klass.res )
+					end
+					
+					if not resource then 
+						return
+					end
+					
+					local rattr = resource.attributes
+					if rattr.value > 0 then
+						nova.log("draining resource")
+						rattr.value = math.max( rattr.value - 2, 0 )
+					end
+				end	
+            end
+        ]],
+    }
+}
+
+register_blueprint "mod_exalted_draining"
+{
+    flags = { EF_NOPICKUP }, 
+    text = {
+        status = "DRAINING",
+        sdesc  = "Attacks drain class skill resource",
+    },  
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )                
+                entity:attach( "mod_exalted_draining" )
+                for c in ecs:children( entity ) do
+                    if ( c.weapon ) then
+                        c:attach("apply_drain")
+                    end
+                end
+            end     
+        ]=],
+        on_die = [=[
+            function( self, entity, killer, current, weapon, gibbed )
+                for c in ecs:children( entity ) do
+                    if c.weapon then
+                        for cc in ecs:children( c ) do
+                            if cc:get_name() == "Apply Drain" then
+                                world:destroy(cc)
+                            end
+                        end 
+                    end
+                end
+            end
+        ]=]
+    },
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -1003,9 +1101,10 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_triggerhappy", },
         -- { "mod_exalted_radioactive", },
         -- { "mod_exalted_soldier_dodge", },
-        -- { "mod_exalted_vampiric", },
+        { "mod_exalted_vampiric", },
         -- { "mod_exalted_spikey", },
-        { "mod_exalted_adaptive", },
+        -- { "mod_exalted_adaptive", },
+        { "mod_exalted_draining", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         make_exalted( entity, 1, exalted_traits )
