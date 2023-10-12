@@ -10,7 +10,7 @@ Adds several new exalted perks to add more variety to the experience (especially
 * DODGE - Formers only. Gains slithering like effect.
 * DRAINING - Drains player resource on hit
 * EMPOWERED - Increases damage by 10% and speed by 5% every few turns, to +100% damage and +50% speed
-* GATEKEEPER - TODO - Locks level exits until killed.
+* GATEKEEPER - Locks main and branch level exits until killed. Doesn't look special, mini or other exits.
 * PHASING - Enemies in sight periodically teleport to a new nearby location
 * POLLUTING - Demon and robot only. Enemies spread acid pools around the level and are acid immune
 * PRESSURING - Increases players weapon swap, reload and item use time when in sight.
