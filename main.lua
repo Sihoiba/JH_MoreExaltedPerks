@@ -1189,6 +1189,9 @@ register_blueprint "mod_exalted_gatekeeper"
                 local level = world:get_level()
 				for e in level:entities() do
 					if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+						if e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") then
+							return
+						end	
 						entity:attach( "mod_exalted_gatekeeper" )
 						e:attach("mod_exalted_gatekeeper_elevator_inactive")
 					end
