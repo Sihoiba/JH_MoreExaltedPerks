@@ -81,7 +81,7 @@ register_blueprint "buff_blinded"
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "Blinded",
-        desc    = "Reduces vision range",               
+        desc    = "reduces vision range",               
     },
     callbacks = {
         on_attach = [[
@@ -123,22 +123,26 @@ register_blueprint "apply_blinded"
     }
 }
 
-register_blueprint "mod_exalted_kw_blinding"
+register_blueprint "mod_exalted_blinding"
 {
     flags = { EF_NOPICKUP }, 
     text = {
         status = "BLINDING",
-        sdesc  = "Attacks apply blinded status",
+        sdesc  = "melee attacks apply blinded status",
     },  
     callbacks = {
         on_activate = [=[
-            function( self, entity )                
-                entity:attach( "mod_exalted_kw_blinding" )
+            function( self, entity )                      
+				local has_melee = false
                 for c in ecs:children( entity ) do
-                    if ( c.weapon ) then
+                    if c.weapon and (c.weapon.type == world:hash("melee") ) then
                         c:attach("apply_blinded")
+						has_melee = true
                     end
                 end
+				if has_melee then
+					entity:attach( "mod_exalted_blinding" )
+				end	
             end     
         ]=]
     },
@@ -188,12 +192,12 @@ register_blueprint "mod_exalted_soldier_bayonette"
     }
 }
 
-register_blueprint "mod_exalted_soldier_blast_shield"
+register_blueprint "mod_exalted_blast_shield"
 {
     flags = { EF_NOPICKUP }, 
     text = {
         status = "BLASTGUARD",
-        sdesc  = "Reduces splash damage by 75%",
+        sdesc  = "reduces splash damage by 75%",
     },  
     attributes = {
         splash_mod = 0.25,
@@ -201,7 +205,7 @@ register_blueprint "mod_exalted_soldier_blast_shield"
     callbacks = {
         on_activate = [=[
             function( self, entity )                
-                entity:attach( "mod_exalted_soldier_blast_shield" )
+                entity:attach( "mod_exalted_blast_shield" )
             end     
         ]=]
     },
@@ -306,7 +310,7 @@ register_blueprint "mod_exalted_phasing"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "PHASING",
-        sdesc  = "Periodically teleports to a new location",
+        sdesc  = "periodically teleports to a new location",
     },  
     attributes = {      
         counter = 0,
@@ -346,7 +350,7 @@ register_blueprint "mod_exalted_polluting"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "POLLUTING",
-        sdesc  = "Spreads acid around itself",
+        sdesc  = "spreads acid around itself",
     },  
     attributes = {      
         counter = 0,
@@ -392,7 +396,7 @@ register_blueprint "mod_exalted_scorching"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "SCORCHING",
-        sdesc  = "Spreads fire around itself",
+        sdesc  = "spreads fire around itself",
     },  
     attributes = {      
         counter = 0,
@@ -434,7 +438,7 @@ register_blueprint "buff_pressured"
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "Pressured",
-        desc    = "Increases reload and consumable use time by 50%, weapon swap time by 25%",               
+        desc    = "increases reload and consumable use time by 50%, weapon swap time by 25%",               
     },
     callbacks = {
         on_die = [[
@@ -464,7 +468,7 @@ register_blueprint "mod_exalted_pressuring"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "PRESSURING",
-        sdesc  = "Increases players weapon swap, reload and consumable use time",
+        sdesc  = "increases players weapon swap, reload and consumable use time",
     },  
     callbacks = {
         on_activate = [[
@@ -511,7 +515,7 @@ register_blueprint "mod_exalted_screamer"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "ALERTING",
-        sdesc  = "More health and raises a alarm when it sees the player",
+        sdesc  = "more health and raises a alarm when it sees the player",
     },  
     callbacks = {
         on_activate = [[
@@ -577,17 +581,21 @@ register_blueprint "mod_exalted_triggerhappy"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "TRIGGERHAPPY",
-        sdesc  = "increases shots fired by 1",
+        sdesc  = "increases shots fired by 1 on multishot attacks",
     },
     callbacks = {
         on_activate = [=[
-            function( self, entity )                                
+            function( self, entity )                      
+				local multishot = false
                 for c in ecs:children( entity ) do
-                    if c.weapon and c.attributes and c.attributes.shots > 1 then
-                        entity:attach( "mod_exalted_triggerhappy" )
+                    if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then                        
                         c:attach("mod_exalted_perk_triggerhappy")
+						multishot = true
                     end
                 end
+				if multishot then
+					entity:attach( "mod_exalted_triggerhappy" )
+				end	
             end     
         ]=],
         on_die = [=[
@@ -684,7 +692,7 @@ register_blueprint "mod_exalted_radioactive"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "RADIOACTIVE",
-        sdesc  = "Increases damage recieved on nearby entities",
+        sdesc  = "increases damage recieved on nearby entities",
     },
     callbacks = {
         on_activate = [=[
@@ -739,7 +747,7 @@ register_blueprint "mod_exalted_soldier_dodge"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "DODGE",
-        sdesc  = "Increases evasion on move",
+        sdesc  = "increases evasion on move",
     },
     callbacks = {
         on_activate = [=[
@@ -776,7 +784,7 @@ register_blueprint "mod_exalted_vampiric"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "VAMPIRIC",
-        sdesc  = "Attacks heal the attacker based on damage dealt",
+        sdesc  = "attacks heal the attacker based on damage dealt",
     },  
     callbacks = {
         on_activate = [=[
@@ -810,7 +818,7 @@ register_blueprint "mod_exalted_spikey"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "SPIKEY",
-        sdesc  = "Deals damage when hit in melee",
+        sdesc  = "deals damage when hit in melee",
     }, 
     callbacks = {
         on_activate = [=[
@@ -968,7 +976,7 @@ register_blueprint "mod_exalted_adaptive"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "ADAPTIVE",
-        sdesc  = "Gains damage resistance to last weapon damage type hit by, clears when hit by different damage",
+        sdesc  = "gains damage resistance to last weapon damage type hit by",
     },   
     callbacks = {
         on_activate = [=[
@@ -1007,7 +1015,7 @@ register_blueprint "apply_drain"
 {
     text = {
         name    = "Apply Drain",
-        desc = "Drains class skill",
+        desc = "drains class skill",
     },
     callbacks = {
         on_damage = [[
@@ -1055,7 +1063,7 @@ register_blueprint "mod_exalted_draining"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "DRAINING",
-        sdesc  = "Attacks drain class skill resource",
+        sdesc  = "attacks drain class skill resource",
     },  
     callbacks = {
         on_activate = [=[
@@ -1135,7 +1143,7 @@ register_blueprint "mod_exalted_empowered"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "EMPOWERED",
-        sdesc  = "Increases damage and speed every few turns",
+        sdesc  = "increases damage and speed every few turns",
     },
     callbacks = {
         on_activate = [=[
@@ -1181,7 +1189,7 @@ register_blueprint "mod_exalted_gatekeeper"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "GATEKEEPER",
-        sdesc  = "Locks main and branch elevators until it has been slain",
+        sdesc  = "locks main and branch elevators until it has been slain",
     },
     callbacks = {
         on_activate = [=[
@@ -1190,8 +1198,10 @@ register_blueprint "mod_exalted_gatekeeper"
 				local lock = false
 				for e in level:entities() do
 					if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-						if not (e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("mod_exalted_gatekeeper_elevator_inactive")) then
-							e:attach("mod_exalted_gatekeeper_elevator_inactive")
+						if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") ) then
+							if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
+								e:attach("mod_exalted_gatekeeper_elevator_inactive")
+							end	
 							lock = true
 						end							
 					end
@@ -1227,29 +1237,130 @@ more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
     local exalted_traits = {
-        -- { "mod_exalted_soldier_bayonette", },
-        -- { "mod_exalted_soldier_blast_shield", },
-        -- { "mod_exalted_kw_blinding", },
-        -- { "mod_exalted_respawn", },
-        -- { "mod_exalted_phasing", },
-        -- { "mod_exalted_polluting", },
-        -- { "mod_exalted_scorching", },
-        -- { "mod_exalted_pressuring", }
-        -- { "mod_exalted_screamer", }
-        -- { "mod_exalted_crit_defence", }
-        -- { "mod_exalted_triggerhappy", },
-        -- { "mod_exalted_radioactive", },
-        -- { "mod_exalted_soldier_dodge", },
-        -- { "mod_exalted_vampiric", },
-        -- { "mod_exalted_spikey", },
-        -- { "mod_exalted_adaptive", },
-        -- { "mod_exalted_draining", },
-        -- { "mod_exalted_empowered", },
+        { "mod_exalted_adaptive", },
+        { "mod_exalted_blast_shield", },
+        { "mod_exalted_blinding", },
+        { "mod_exalted_crit_defence", },
+        { "mod_exalted_draining", },
+        { "mod_exalted_empowered", },
 		{ "mod_exalted_gatekeeper", },
+        { "mod_exalted_phasing", },
+        { "mod_exalted_polluting", },
+        { "mod_exalted_pressuring", },
+        { "mod_exalted_radioactive", },
+        { "mod_exalted_respawn", },
+        { "mod_exalted_scorching", },
+        { "mod_exalted_screamer", },
+        { "mod_exalted_soldier_bayonette", },
+        { "mod_exalted_soldier_dodge", },
+        { "mod_exalted_spikey", },
+        { "mod_exalted_triggerhappy", },
+        { "mod_exalted_vampiric", },
     }
-    if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
-        make_exalted( entity, 1, exalted_traits )
+    if entity.data and entity.data.ai then
+        make_exalted( entity, 3, exalted_traits )
     end
 end
 
-world.register_on_entity( more_exalted_test.on_entity )
+-- world.register_on_entity( more_exalted_test.on_entity )
+
+function make_more_exalted_list( entity, list, nightmare_diff )
+	
+	table.insert( list, { "mod_exalted_adaptive", min = 4, } )
+	table.insert( list, "mod_exalted_blast_shield" )
+	table.insert( list, "mod_exalted_crit_defence" )
+	table.insert( list, "mod_exalted_draining" )
+	table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
+	table.insert( list, "mod_exalted_gatekeeper" )
+	table.insert( list, "mod_exalted_phasing" )
+	table.insert( list, "mod_exalted_pressuring" )
+	table.insert( list, "mod_exalted_radioactive" )
+	table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
+	
+	if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
+		table.insert( list, "mod_exalted_soldier_bayonette" )
+		table.insert( list, "mod_exalted_soldier_dodge" )
+		table.insert( list, { "mod_exalted_screamer", tag = "health" } )
+	end
+
+	if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
+		table.insert( list, "mod_exalted_polluting" )
+		table.insert( list, "mod_exalted_scorching" )
+		table.insert( list, "mod_exalted_spikey" )
+	end
+	
+	if entity.data and entity.data.is_mechanical then
+		table.insert( list, "mod_exalted_polluting" )
+		table.insert( list, { "mod_exalted_screamer", tag = "health" } )
+	end
+
+	for c in ecs:children( entity ) do
+		if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+			table.insert( list, "mod_exalted_triggerhappy" )
+		end
+	end	
+	
+	for c in ecs:children( entity ) do
+		if c.weapon and (c.weapon.type == world:hash("melee") ) then
+			table.insert( list, "mod_exalted_blinding" )
+		end
+	end			
+	
+	if not nightmare_diff and entity.data and not entity.data.is_mechanical then
+		table.insert( list, "mod_exalted_respawn" )
+	end	
+end
+
+function make_exalted( entity, dlevel, params, override )
+	local keywords 
+	local override  = override or {}
+	if params.keywords then keywords = table.icopy( params.keywords ) end
+	local count     = override.count or params.count
+	local danger    = params.danger or 0
+	local nightmare_diff = false
+
+	-- nightmare hack
+	if dlevel > 1000 then
+		count  = math.floor( dlevel / 1000 )
+		dlevel = dlevel - count * 1000
+		if count > 3 then count = 3 end
+		nightmare_diff = true
+	end
+
+	if not keywords then
+		keywords = {			
+		}
+		if not count then
+			count = math.floor( ( dlevel - danger ) / 8 ) + 1
+			if math.random( 100 ) < ( DIFFICULTY + 1 ) * 10 then
+				count = count + 1
+			end
+			count = math.min( math.max( 1, count ), 3 )
+		end
+
+		local list = {}
+		make_more_exalted_list( entity, list, nightmare_diff )
+		
+		for _,k in ipairs( params ) do
+			if ((not k.min) or k.min <= dlevel ) then
+				table.insert( list, k )
+			end
+		end
+
+		while count > 0 and #list > 0 do
+			local entry = table.remove( list, math.random( #list ) )
+			if type( entry ) == "string" then
+				table.insert( keywords, entry )
+			else
+				table.insert( keywords, entry[1] )
+				if entry.tag then
+					table.iremove_if( list, function(t,i) return t[i].tag == entry.tag end )
+				end		
+			end
+			count = count - 1
+		end
+	end
+	entity.data.exalted = keywords
+	apply_exalted( entity, keywords )
+	return keywords
+end
