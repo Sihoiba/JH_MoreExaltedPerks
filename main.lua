@@ -1272,11 +1272,16 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     table.insert( list, "mod_exalted_draining" )
     table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
     table.insert( list, "mod_exalted_gatekeeper" )
-    table.insert( list, "mod_exalted_phasing" )
     table.insert( list, "mod_exalted_pressuring" )
     table.insert( list, "mod_exalted_radioactive" )
     table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
     
+	if entity.data and entity.data.ai and entity.data.ai.idle ~= "turret_idle" then
+		table.insert( list, "mod_exalted_phasing" )		
+	else
+		nova.log("not phasing"..entity:get_name())
+	end
+	
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
         table.insert( list, "mod_exalted_soldier_bayonet" )
         table.insert( list, "mod_exalted_soldier_dodge" )
