@@ -133,16 +133,16 @@ register_blueprint "mod_exalted_blinding"
     callbacks = {
         on_activate = [=[
             function( self, entity )                      
-				local has_melee = false
+                local has_melee = false
                 for c in ecs:children( entity ) do
                     if c.weapon and (c.weapon.type == world:hash("melee") ) then
                         c:attach("apply_blinded")
-						has_melee = true
+                        has_melee = true
                     end
                 end
-				if has_melee then
-					entity:attach( "mod_exalted_blinding" )
-				end	
+                if has_melee then
+                    entity:attach( "mod_exalted_blinding" )
+                end 
             end     
         ]=]
     },
@@ -586,16 +586,16 @@ register_blueprint "mod_exalted_triggerhappy"
     callbacks = {
         on_activate = [=[
             function( self, entity )                      
-				local multishot = false
+                local multishot = false
                 for c in ecs:children( entity ) do
                     if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then                        
                         c:attach("mod_exalted_perk_triggerhappy")
-						multishot = true
+                        multishot = true
                     end
                 end
-				if multishot then
-					entity:attach( "mod_exalted_triggerhappy" )
-				end	
+                if multishot then
+                    entity:attach( "mod_exalted_triggerhappy" )
+                end 
             end     
         ]=],
         on_die = [=[
@@ -1102,21 +1102,21 @@ register_blueprint "mod_exalted_empowered_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
-				local sattr = self.attributes
-				if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
-					sattr.encountered = true
-				end
-				if sattr.encountered then					
-					if time_passed > 0 and sattr.percentage < 100 then
-						sattr.counter = sattr.counter + time_passed                    
-						if sattr.counter > 500 then
-							sattr.counter = 0                       
-							sattr.damage_mult = sattr.damage_mult + 0.1
-							sattr.move_time = sattr.move_time - 0.05
-							sattr.percentage = sattr.percentage + 10
-						end
-					end
-				end	
+                local sattr = self.attributes
+                if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
+                    sattr.encountered = true
+                end
+                if sattr.encountered then                   
+                    if time_passed > 0 and sattr.percentage < 100 then
+                        sattr.counter = sattr.counter + time_passed                    
+                        if sattr.counter > 500 then
+                            sattr.counter = 0                       
+                            sattr.damage_mult = sattr.damage_mult + 0.1
+                            sattr.move_time = sattr.move_time - 0.05
+                            sattr.percentage = sattr.percentage + 10
+                        end
+                    end
+                end 
             end
         ]],         
         on_die = [[
@@ -1130,7 +1130,7 @@ register_blueprint "mod_exalted_empowered_buff"
         move_time = 1.0,
         percentage = 0,
         counter = 0,
-		encountered = false,
+        encountered = false,
     },
     ui_buff = {
         color = LIGHTGREEN,
@@ -1157,31 +1157,31 @@ register_blueprint "mod_exalted_empowered"
 
 register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
 {
-	text = {
-		short = "inactive",
-		failure = "It won't open until an exalted gatekeeper has been slain!",
-	},
-	callbacks = {
-		on_activate = [=[
-			function( self, who, level )
-				if who == world:get_player() then					
-					ui:set_hint( self.text.failure, 2001, 0 )
-					world:play_voice( "vo_refuse" )
-				end
-				return 1
-			end
-		]=],
-		on_attach = [=[
-			function( self, parent )
-				parent.flags.data =  { EF_NOSIGHT, EF_NOMOVE, EF_NOFLY, EF_NOSHOOT, EF_BUMPACTION, EF_ACTION }
-			end
-		]=],
-		on_detach = [=[
-			function( self, parent )
-				parent.flags.data =  {}
-			end
-		]=],
-	},
+    text = {
+        short = "inactive",
+        failure = "It won't open until an exalted gatekeeper has been slain!",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, who, level )
+                if who == world:get_player() then                   
+                    ui:set_hint( self.text.failure, 2001, 0 )
+                    world:play_voice( "vo_refuse" )
+                end
+                return 1
+            end
+        ]=],
+        on_attach = [=[
+            function( self, parent )
+                parent.flags.data =  { EF_NOSIGHT, EF_NOMOVE, EF_NOFLY, EF_NOSHOOT, EF_BUMPACTION, EF_ACTION }
+            end
+        ]=],
+        on_detach = [=[
+            function( self, parent )
+                parent.flags.data =  {}
+            end
+        ]=],
+    },
 }
 
 register_blueprint "mod_exalted_gatekeeper"
@@ -1195,39 +1195,39 @@ register_blueprint "mod_exalted_gatekeeper"
         on_activate = [=[
             function( self, entity )                
                 local level = world:get_level()
-				local lock = false
-				for e in level:entities() do
-					if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-						if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") ) then
-							if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
-								e:attach("mod_exalted_gatekeeper_elevator_inactive")
-							end	
-							lock = true
-						end							
-					end
-                end		
-				if lock then
-					entity:attach( "mod_exalted_gatekeeper" )					
-				end	
+                local lock = false
+                for e in level:entities() do
+                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") ) then
+                            if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
+                                e:attach("mod_exalted_gatekeeper_elevator_inactive")
+                            end 
+                            lock = true
+                        end                         
+                    end
+                end     
+                if lock then
+                    entity:attach( "mod_exalted_gatekeeper" )                   
+                end 
             end
         ]=],
-		on_die = [[
+        on_die = [[
             function ( self )   
-				local unlocked = false
+                local unlocked = false
                 local level = world:get_level()
-				for e in level:entities() do
-					if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-						local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
-						if child then
-							world:mark_destroy( child )
-							unlocked = true
-						end
-					end
+                for e in level:entities() do
+                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+                        local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
+                        if child then
+                            world:mark_destroy( child )
+                            unlocked = true
+                        end
+                    end
                 end
-				world:flush_destroy()
-				if unlocked then
-					ui:set_hint( "Elevators unlocked", 2001, 0 )
-				end	
+                world:flush_destroy()
+                if unlocked then
+                    ui:set_hint( "Elevators unlocked", 2001, 0 )
+                end 
             end
         ]],
     },  
@@ -1243,7 +1243,7 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_crit_defence", },
         { "mod_exalted_draining", },
         { "mod_exalted_empowered", },
-		{ "mod_exalted_gatekeeper", },
+        { "mod_exalted_gatekeeper", },
         { "mod_exalted_phasing", },
         { "mod_exalted_polluting", },
         { "mod_exalted_pressuring", },
@@ -1265,102 +1265,102 @@ end
 -- world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
-	
-	table.insert( list, { "mod_exalted_adaptive", min = 4, } )
-	table.insert( list, "mod_exalted_blast_shield" )
-	table.insert( list, "mod_exalted_crit_defence" )
-	table.insert( list, "mod_exalted_draining" )
-	table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
-	table.insert( list, "mod_exalted_gatekeeper" )
-	table.insert( list, "mod_exalted_phasing" )
-	table.insert( list, "mod_exalted_pressuring" )
-	table.insert( list, "mod_exalted_radioactive" )
-	table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
-	
-	if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
-		table.insert( list, "mod_exalted_soldier_bayonette" )
-		table.insert( list, "mod_exalted_soldier_dodge" )
-		table.insert( list, { "mod_exalted_screamer", tag = "health" } )
-	end
+    
+    table.insert( list, { "mod_exalted_adaptive", min = 4, } )
+    table.insert( list, "mod_exalted_blast_shield" )
+    table.insert( list, "mod_exalted_crit_defence" )
+    table.insert( list, "mod_exalted_draining" )
+    table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
+    table.insert( list, "mod_exalted_gatekeeper" )
+    table.insert( list, "mod_exalted_phasing" )
+    table.insert( list, "mod_exalted_pressuring" )
+    table.insert( list, "mod_exalted_radioactive" )
+    table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
+    
+    if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
+        table.insert( list, "mod_exalted_soldier_bayonette" )
+        table.insert( list, "mod_exalted_soldier_dodge" )
+        table.insert( list, { "mod_exalted_screamer", tag = "health" } )
+    end
 
-	if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
-		table.insert( list, "mod_exalted_polluting" )
-		table.insert( list, "mod_exalted_scorching" )
-		table.insert( list, "mod_exalted_spikey" )
-	end
-	
-	if entity.data and entity.data.is_mechanical then
-		table.insert( list, "mod_exalted_polluting" )
-		table.insert( list, { "mod_exalted_screamer", tag = "health" } )
-	end
+    if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
+        table.insert( list, "mod_exalted_polluting" )
+        table.insert( list, "mod_exalted_scorching" )
+        table.insert( list, "mod_exalted_spikey" )
+    end
+    
+    if entity.data and entity.data.is_mechanical then
+        table.insert( list, "mod_exalted_polluting" )
+        table.insert( list, { "mod_exalted_screamer", tag = "health" } )
+    end
 
-	for c in ecs:children( entity ) do
-		if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
-			table.insert( list, "mod_exalted_triggerhappy" )
-		end
-	end	
-	
-	for c in ecs:children( entity ) do
-		if c.weapon and (c.weapon.type == world:hash("melee") ) then
-			table.insert( list, "mod_exalted_blinding" )
-		end
-	end			
-	
-	if not nightmare_diff and entity.data and not entity.data.is_mechanical then
-		table.insert( list, "mod_exalted_respawn" )
-	end	
+    for c in ecs:children( entity ) do
+        if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+            table.insert( list, "mod_exalted_triggerhappy" )
+        end
+    end 
+    
+    for c in ecs:children( entity ) do
+        if c.weapon and (c.weapon.type == world:hash("melee") ) then
+            table.insert( list, "mod_exalted_blinding" )
+        end
+    end         
+    
+    if not nightmare_diff and entity.data and not entity.data.is_mechanical then
+        table.insert( list, "mod_exalted_respawn" )
+    end 
 end
 
 function make_exalted( entity, dlevel, params, override )
-	local keywords 
-	local override  = override or {}
-	if params.keywords then keywords = table.icopy( params.keywords ) end
-	local count     = override.count or params.count
-	local danger    = params.danger or 0
-	local nightmare_diff = false
+    local keywords 
+    local override  = override or {}
+    if params.keywords then keywords = table.icopy( params.keywords ) end
+    local count     = override.count or params.count
+    local danger    = params.danger or 0
+    local nightmare_diff = false
 
-	-- nightmare hack
-	if dlevel > 1000 then
-		count  = math.floor( dlevel / 1000 )
-		dlevel = dlevel - count * 1000
-		if count > 3 then count = 3 end
-		nightmare_diff = true
-	end
+    -- nightmare hack
+    if dlevel > 1000 then
+        count  = math.floor( dlevel / 1000 )
+        dlevel = dlevel - count * 1000
+        if count > 3 then count = 3 end
+        nightmare_diff = true
+    end
 
-	if not keywords then
-		keywords = {			
-		}
-		if not count then
-			count = math.floor( ( dlevel - danger ) / 8 ) + 1
-			if math.random( 100 ) < ( DIFFICULTY + 1 ) * 10 then
-				count = count + 1
-			end
-			count = math.min( math.max( 1, count ), 3 )
-		end
+    if not keywords then
+        keywords = {            
+        }
+        if not count then
+            count = math.floor( ( dlevel - danger ) / 8 ) + 1
+            if math.random( 100 ) < ( DIFFICULTY + 1 ) * 10 then
+                count = count + 1
+            end
+            count = math.min( math.max( 1, count ), 3 )
+        end
 
-		local list = {}
-		make_more_exalted_list( entity, list, nightmare_diff )
-		
-		for _,k in ipairs( params ) do
-			if ((not k.min) or k.min <= dlevel ) then
-				table.insert( list, k )
-			end
-		end
+        local list = {}
+        make_more_exalted_list( entity, list, nightmare_diff )
+        
+        for _,k in ipairs( params ) do
+            if ((not k.min) or k.min <= dlevel ) then
+                table.insert( list, k )
+            end
+        end
 
-		while count > 0 and #list > 0 do
-			local entry = table.remove( list, math.random( #list ) )
-			if type( entry ) == "string" then
-				table.insert( keywords, entry )
-			else
-				table.insert( keywords, entry[1] )
-				if entry.tag then
-					table.iremove_if( list, function(t,i) return t[i].tag == entry.tag end )
-				end		
-			end
-			count = count - 1
-		end
-	end
-	entity.data.exalted = keywords
-	apply_exalted( entity, keywords )
-	return keywords
+        while count > 0 and #list > 0 do
+            local entry = table.remove( list, math.random( #list ) )
+            if type( entry ) == "string" then
+                table.insert( keywords, entry )
+            else
+                table.insert( keywords, entry[1] )
+                if entry.tag then
+                    table.iremove_if( list, function(t,i) return t[i].tag == entry.tag end )
+                end     
+            end
+            count = count - 1
+        end
+    end
+    entity.data.exalted = keywords
+    apply_exalted( entity, keywords )
+    return keywords
 end
