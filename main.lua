@@ -601,7 +601,7 @@ register_blueprint "mod_exalted_triggerhappy"
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    if c.weapon and c.attributes and c.attributes.shots > 1 then
+                    if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
                         for cc in ecs:children( c ) do
                             if cc:get_name() == "Triggerhappy" then
                                 world:destroy(cc)
