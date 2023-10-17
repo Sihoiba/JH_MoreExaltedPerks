@@ -423,7 +423,7 @@ register_blueprint "mod_exalted_scorching"
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
-                            ui:spawn_fx( entity, "burning_smoke", entity )                  
+                            ui:spawn_fx( entity, "scorching_smoke", entity )                  
                             gtk.place_flames( t, 10, 1000 + math.random(100) )                          
                         end 
                     end
@@ -1257,7 +1257,7 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_triggerhappy", },
         { "mod_exalted_vampiric", },
     }
-    if entity.data and entity.data.ai then
+    if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
         make_exalted( entity, 3, exalted_traits )
     end
 end
@@ -1339,7 +1339,7 @@ function make_exalted( entity, dlevel, params, override )
         end
 
         local list = {}
-        make_more_exalted_list( entity, list, nightmare_diff )
+        --make_more_exalted_list( entity, list, nightmare_diff )
         
         for _,k in ipairs( params ) do
             if ((not k.min) or k.min <= dlevel ) then
