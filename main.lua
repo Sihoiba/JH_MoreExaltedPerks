@@ -1339,7 +1339,7 @@ function make_exalted( entity, dlevel, params, override )
         end
 
         local list = {}
-        --make_more_exalted_list( entity, list, nightmare_diff )
+        make_more_exalted_list( entity, list, nightmare_diff )
         
         for _,k in ipairs( params ) do
             if ((not k.min) or k.min <= dlevel ) then
