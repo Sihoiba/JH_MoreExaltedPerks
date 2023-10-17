@@ -165,17 +165,17 @@ register_blueprint "runtime_drop_weapon_on_death"
     }
 }
 
-register_blueprint "mod_exalted_soldier_bayonette"
+register_blueprint "mod_exalted_soldier_bayonet"
 {
     flags = { EF_NOPICKUP }, 
     text = {
-        status = "BAYONETTE",
+        status = "BAYONET",
         sdesc  = "dangerous melee attack",
     },
     callbacks = {
         on_activate = [=[
             function( self, entity )                
-                entity:attach( "mod_exalted_soldier_bayonette" )
+                entity:attach( "mod_exalted_soldier_bayonet" )
                 entity:attach( "runtime_drop_weapon_on_death" )
             end     
         ]=],
@@ -813,17 +813,17 @@ register_blueprint "mod_exalted_vampiric"
     },
 }
 
-register_blueprint "mod_exalted_spikey"
+register_blueprint "mod_exalted_spiky"
 {
     flags = { EF_NOPICKUP }, 
     text = {
-        status = "SPIKEY",
+        status = "SPIKY",
         sdesc  = "deals damage when hit in melee",
     }, 
     callbacks = {
         on_activate = [=[
             function( self, entity )                
-                entity:attach( "mod_exalted_spikey" )                
+                entity:attach( "mod_exalted_spiky" )                
             end     
         ]=],
         on_receive_damage = [[
@@ -1251,9 +1251,9 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_respawn", },
         { "mod_exalted_scorching", },
         { "mod_exalted_screamer", },
-        { "mod_exalted_soldier_bayonette", },
+        { "mod_exalted_soldier_bayonet", },
         { "mod_exalted_soldier_dodge", },
-        { "mod_exalted_spikey", },
+        { "mod_exalted_spiky", },
         { "mod_exalted_triggerhappy", },
         { "mod_exalted_vampiric", },
     }
@@ -1278,7 +1278,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
     
     if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
-        table.insert( list, "mod_exalted_soldier_bayonette" )
+        table.insert( list, "mod_exalted_soldier_bayonet" )
         table.insert( list, "mod_exalted_soldier_dodge" )
         table.insert( list, { "mod_exalted_screamer", tag = "health" } )
     end
@@ -1286,7 +1286,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
         table.insert( list, "mod_exalted_polluting" )
         table.insert( list, "mod_exalted_scorching" )
-        table.insert( list, "mod_exalted_spikey" )
+        table.insert( list, "mod_exalted_spiky" )
     end
     
     if entity.data and entity.data.is_mechanical then
