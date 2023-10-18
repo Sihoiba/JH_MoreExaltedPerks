@@ -325,6 +325,8 @@ register_blueprint "mod_exalted_phasing"
             function ( self, entity, time_passed, last )
                 local level = world:get_level()
                 local player = world:get_player()
+                local enemy_count = level.level_info.enemies * 1
+                nova.log("mod phasing enemy_count: "..enemy_count)
                 if time_passed > 0 and entity.target and entity.target.entity and entity.target.entity == player and level:can_see_entity( entity, entity.target.entity, 8 ) then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
@@ -335,8 +337,33 @@ register_blueprint "mod_exalted_phasing"
                         if t then
                             world:play_sound( "summon", entity )
                             ui:spawn_fx( entity, "fx_teleport", entity )
+                            level:hard_place_entity( entity, t )    
+                            nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)                        
+                            level.level_info.enemies = enemy_count
+                            nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                        end 
+                    end
+                end
+            end
+        ]],
+        on_receive_damage = [[
+            function ( self, source, weapon, amount )
+                if not self then return end
+                local entity = self:parent()
+                local level = world:get_level()
+                local enemy_count = level.level_info.enemies * 1
+                local player = world:get_player()
+                local eh = entity.health
+                if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
+                    local sattr = self.attributes
+                    local entityPos = world:get_position( entity )
+                    if sattr.counter > 500 then
+                        local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
+                        if t then
+                            world:play_sound( "summon", entity )
+                            ui:spawn_fx( entity, "fx_teleport", entity )
                             level:hard_place_entity( entity, t )                            
-                            level.level_info.enemies = level.level_info.enemies - 1 
+                            level.level_info.enemies = enemy_count 
                         end 
                     end
                 end
@@ -1282,11 +1309,14 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         nova.log("not phasing "..entity:get_name())
     end
     
-    if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then
-        table.insert( list, "mod_exalted_soldier_bayonet" )
+    if entity.data and entity.data.ai and entity.data.ai.group == "zombie" then        
         table.insert( list, "mod_exalted_soldier_dodge" )
         table.insert( list, { "mod_exalted_screamer", tag = "health" } )
     end
+    
+    if entity.data and entity.data.ai and entity.data.ai.group == "zombie" and entity.data.nightmare and entity.data.nightmare.id ~= "human_exalted_paladin" then
+        table.insert( list, "mod_exalted_soldier_bayonet" )
+    end 
 
     if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
         table.insert( list, "mod_exalted_polluting" )
