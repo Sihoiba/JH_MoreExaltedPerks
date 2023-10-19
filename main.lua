@@ -40,6 +40,7 @@ function safe_phase_coord_spiral_out( self, start_coord, min_range, max_range )
         local m = min_dist
         local spiral_coords = {}
         while cx <= max_dist and cy <= max_dist do
+            nova.log("Spiral get values cx: "..cx..", cy: "..cy..", max_dist: "..max_dist)
             while (2 * cx * d) < m do
                 table.insert(spiral_coords, {x=cx, y=cy})
                 cx = cx + d
@@ -62,6 +63,7 @@ function safe_phase_coord_spiral_out( self, start_coord, min_range, max_range )
     local spawn_coords = spiral_get_values(min_range, max_range)
     local abort = 0
     while next(spawn_coords) ~= nil do
+        nova.log("abort count")
         if abort > 256 then
             return
         end 
@@ -135,15 +137,27 @@ register_blueprint "mod_exalted_blinding"
             function( self, entity )                      
                 local has_melee = false
                 for c in ecs:children( entity ) do
+                    nova.log("Checking for melee weapon "..entity:get_name())
                     if c.weapon and (c.weapon.type == world:hash("melee") ) then
                         c:attach("apply_blinded")
                         has_melee = true
                     end
                 end
                 if has_melee then
+                    nova.log("Attaching blinding")
                     entity:attach( "mod_exalted_blinding" )
                 end 
             end     
+        ]=],
+        on_die = [=[
+            function( self, entity, killer, current, weapon, gibbed )
+                for c in ecs:children( entity ) do
+                    local blinding_perk = c:child( "apply_blinded" )
+                    if blinding_perk then
+                        world:destroy( blinding_perk )                        
+                    end 
+                end
+            end
         ]=]
     },
 }
@@ -174,7 +188,8 @@ register_blueprint "mod_exalted_soldier_bayonet"
     },
     callbacks = {
         on_activate = [=[
-            function( self, entity )                
+            function( self, entity )    
+                nova.log("Attaching bayonette")            
                 entity:attach( "mod_exalted_soldier_bayonet" )
                 entity:attach( "runtime_drop_weapon_on_death" )
             end     
@@ -204,7 +219,8 @@ register_blueprint "mod_exalted_blast_shield"
     },
     callbacks = {
         on_activate = [=[
-            function( self, entity )                
+            function( self, entity ) 
+                nova.log("Attaching blastshield")           
                 entity:attach( "mod_exalted_blast_shield" )
             end     
         ]=]
@@ -229,6 +245,7 @@ register_blueprint "exalted_tainted_mark"
     callbacks = {
         on_timer = [[
             function ( self, first )
+                nova.log("exalted tainted on timer")
                 if first then return 500 end
                 local level = world:get_level()
                 local pos   = world:get_position( self )
@@ -250,9 +267,11 @@ register_blueprint "exalted_tainted_mark"
                                 summon.minimap.always = true
                             end                   
                         end
+                        nova.log("exalted tainted on done")
                         return 0
                     end
                 end
+                nova.log("exalted tainted on done")
                 return 500
             end
         ]],
@@ -317,7 +336,8 @@ register_blueprint "mod_exalted_phasing"
     },
     callbacks = {
         on_activate = [[
-            function( self, entity )                
+            function( self, entity )     
+                nova.log("Attaching phasing")
                 entity:attach( "mod_exalted_phasing" )              
             end     
         ]],     
@@ -326,12 +346,12 @@ register_blueprint "mod_exalted_phasing"
                 local level = world:get_level()
                 local player = world:get_player()
                 local enemy_count = level.level_info.enemies * 1
-                nova.log("mod phasing enemy_count: "..enemy_count)
+                nova.log("on action mod phasing count before: "..enemy_count)
                 if time_passed > 0 and entity.target and entity.target.entity and entity.target.entity == player and level:can_see_entity( entity, entity.target.entity, 8 ) then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
-                    if sattr.counter > 500 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
+                    if sattr.counter > 400 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
@@ -344,6 +364,7 @@ register_blueprint "mod_exalted_phasing"
                         end 
                     end
                 end
+                nova.log("on action mod phasing count after: "..enemy_count)
             end
         ]],
         on_receive_damage = [[
@@ -354,10 +375,11 @@ register_blueprint "mod_exalted_phasing"
                 local enemy_count = level.level_info.enemies * 1
                 local player = world:get_player()
                 local eh = entity.health
+                nova.log("on damage mod phasing count before: "..enemy_count)
                 if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
                     local entityPos = world:get_position( entity )
-                    if sattr.counter > 500 then
+                    if sattr.counter > 400 then
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
                             world:play_sound( "summon", entity )
@@ -365,8 +387,9 @@ register_blueprint "mod_exalted_phasing"
                             level:hard_place_entity( entity, t )                            
                             level.level_info.enemies = enemy_count 
                         end 
-                    end
+                    end                 
                 end
+                nova.log("on damage mod phasing count after: "..enemy_count)
             end
         ]],
     },
@@ -387,12 +410,14 @@ register_blueprint "mod_exalted_polluting"
     },
     callbacks = {
         on_activate = [[
-            function( self, entity )                
+            function( self, entity )
+                nova.log("Attaching polluting")
                 entity:attach( "mod_exalted_polluting" )              
             end     
         ]],     
         on_action = [[
             function ( self, entity, time_passed, last )
+                nova.log("Pollution checking on action")
                 local level = world:get_level()
                 local player = world:get_player()
                 if time_passed > 0 then
@@ -400,6 +425,7 @@ register_blueprint "mod_exalted_polluting"
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
                     if sattr.counter > 150 then
+                        nova.log("Pollution spreading acid")
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
@@ -413,6 +439,7 @@ register_blueprint "mod_exalted_polluting"
                         end 
                     end
                 end
+                nova.log("Pollution done spreading acid")
             end
         ]],
     },
@@ -440,6 +467,7 @@ register_blueprint "mod_exalted_scorching"
         ]],     
         on_action = [[
             function ( self, entity, time_passed, last )
+                nova.log("Scorching checking on action")
                 local level = world:get_level()
                 local player = world:get_player()
                 if time_passed > 0 then
@@ -447,6 +475,7 @@ register_blueprint "mod_exalted_scorching"
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
                     if sattr.counter > 150 then
+                        nova.log("Scorching done spreading fire")
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
@@ -455,6 +484,7 @@ register_blueprint "mod_exalted_scorching"
                         end 
                     end
                 end
+                nova.log("Scorching done making fire")
             end
         ]],
     },
@@ -505,6 +535,7 @@ register_blueprint "mod_exalted_pressuring"
         ]],   
         on_post_command = [=[
             function ( self, actor, cmt, tgt, time )
+                nova.log("pressured on post command")
                 local level = world:get_level()
                 for b in level:targets( actor, 32 ) do 
                     if b.data then
@@ -514,6 +545,7 @@ register_blueprint "mod_exalted_pressuring"
                         end
                     end
                 end
+                nova.log("pressured on post command done")
             end
         ]=],
     }
@@ -554,6 +586,7 @@ register_blueprint "mod_exalted_screamer"
         ]],   
         on_post_command = [=[
             function ( self, actor, cmt, tgt, time )
+                nova.log("alerting on post command")
                 local level = world:get_level()
                 for b in level:targets( actor, 32 ) do 
                     if b.data then
@@ -567,6 +600,7 @@ register_blueprint "mod_exalted_screamer"
                         end
                     end
                 end
+                nova.log("alerting on post command done")
             end
         ]=],
     }
@@ -628,13 +662,10 @@ register_blueprint "mod_exalted_triggerhappy"
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
-                        for cc in ecs:children( c ) do
-                            if cc:get_name() == "Triggerhappy" then
-                                world:destroy(cc)
-                            end
-                        end 
-                    end
+                    local trigger_perk = c:child( "mod_exalted_perk_triggerhappy" )
+                    if trigger_perk then
+                        world:destroy( trigger_perk )                        
+                    end 
                 end
             end
         ]=]
@@ -651,7 +682,9 @@ register_blueprint "buff_irradiated"
     callbacks = {
         on_post_command = [[
             function ( self, actor, cmt, tgt, time )
+                nova.log("radiation on post command")
                 world:callback( self )
+                nova.log("radiation on post command done")
             end
         ]],
         on_callback = [[
@@ -689,12 +722,14 @@ register_blueprint "mod_exalted_radioactive_aura"
     callbacks = {
         on_timer = [[
             function ( self, first )
+                nova.log("radiation on timer")
                 if first then return 1 end
                 if not self then return 0 end
                 local level    = world:get_level()
                 local parent   = self:parent()
                 if not level:is_alive( parent ) then 
                     world:mark_destroy( self )
+                    nova.log("radiation on done")
                     return 0
                 end
                 local position = world:get_position( parent )
@@ -708,6 +743,7 @@ register_blueprint "mod_exalted_radioactive_aura"
                         end
                     end
                 end
+                nova.log("radiation on done")
                 return 50
             end
         ]],
@@ -749,6 +785,7 @@ register_blueprint "mod_exalted_dodge_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
+                nova.log("Exalted dodge checking")
                 if time_passed > 0 then
                     local evasion = self.attributes.evasion
                     if evasion > 0 then
@@ -759,6 +796,7 @@ register_blueprint "mod_exalted_dodge_buff"
                         end
                     end
                 end
+                nova.log("Exalted dodge done")
             end
         ]],
         on_move = [[
@@ -819,7 +857,7 @@ register_blueprint "mod_exalted_vampiric"
                 entity:attach( "mod_exalted_vampiric" )
                 for c in ecs:children( entity ) do
                     if ( c.weapon ) then
-                        c:attach("apply_vampiric")
+                        c:attach( "apply_vampiric" )
                     end
                 end
             end     
@@ -827,13 +865,10 @@ register_blueprint "mod_exalted_vampiric"
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    if c.weapon then
-                        for cc in ecs:children( c ) do
-                            if cc:get_name() == "Apply Vampiric" then
-                                world:destroy(cc)
-                            end
-                        end 
-                    end
+                    local vampiric_perk = c:child( "apply_vampiric" )
+                    if vampiric_perk then
+                        world:destroy( vampiric_perk )
+                    end                        
                 end
             end
         ]=]
@@ -1106,13 +1141,10 @@ register_blueprint "mod_exalted_draining"
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    if c.weapon then
-                        for cc in ecs:children( c ) do
-                            if cc:get_name() == "Apply Drain" then
-                                world:destroy(cc)
-                            end
-                        end 
-                    end
+                    local drain_perk = c:child( "apply_drain" )
+                    if drain_perk then
+                        world:destroy( drain_perk )
+                    end                        
                 end
             end
         ]=]
@@ -1129,8 +1161,10 @@ register_blueprint "mod_exalted_empowered_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
+                nova.log("Empowered on action")
                 local sattr = self.attributes
                 if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
+                    nova.log("Empowered encountered player")
                     sattr.encountered = true
                 end
                 if sattr.encountered then                   
@@ -1144,6 +1178,7 @@ register_blueprint "mod_exalted_empowered_buff"
                         end
                     end
                 end 
+                nova.log("Empowered done")
             end
         ]],         
         on_die = [[
@@ -1289,7 +1324,7 @@ function more_exalted_test.on_entity( entity )
     end
 end
 
--- world.register_on_entity( more_exalted_test.on_entity )
+ -- world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
     
@@ -1383,6 +1418,7 @@ function make_exalted( entity, dlevel, params, override )
         end
 
         while count > 0 and #list > 0 do
+            nova.log("count: "..count.." and #list:"..#list)
             local entry = table.remove( list, math.random( #list ) )
             if type( entry ) == "string" then
                 table.insert( keywords, entry )
@@ -1397,5 +1433,6 @@ function make_exalted( entity, dlevel, params, override )
     end
     entity.data.exalted = keywords
     apply_exalted( entity, keywords )
+    nova.log("Applying exalted perks to "..entity:get_name())
     return keywords
 end
