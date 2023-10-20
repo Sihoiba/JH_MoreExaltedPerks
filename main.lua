@@ -588,12 +588,12 @@ register_blueprint "mod_exalted_screamer"
             function ( self, actor, cmt, tgt, time )
                 nova.log("alerting on post command")
                 local level = world:get_level()
-				if actor.data and actor.data.disabled then
-					return
-				end	
-				if actor:child("disabled" ) then
-					return
-				end
+                if actor.data and actor.data.disabled then
+                    return
+                end 
+                if actor:child("disabled" ) then
+                    return
+                end
                 for b in level:targets( actor, 32 ) do 
                     if b.data then
                         local data = b.data
@@ -1157,12 +1157,78 @@ register_blueprint "mod_exalted_draining"
     },
 }
 
+register_blueprint "power_up_10" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
+register_blueprint "power_up_20" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
+register_blueprint "power_up_40" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
+register_blueprint "power_up_60" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
+register_blueprint "power_up_80" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
+register_blueprint "power_up_100" {
+    flags = { EF_NOPICKUP }, 
+    callbacks = {
+        on_die = [[
+            function ( self )               
+                world:mark_destroy( self )
+            end
+        ]],
+    }
+}
+
 register_blueprint "mod_exalted_empowered_buff"
 {
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "POWERING UP",
-        desc    = "increases damage dealt by {!+10%} and speed by !{5%} every few turns to +100% damage +50% speed",
+        desc    = "increases damage dealt by {!+10%} and speed by {!5%} every few turns to {!+100%} damage {!+50%} speed",
     },
     callbacks = {
         on_action = [[
@@ -1180,15 +1246,48 @@ register_blueprint "mod_exalted_empowered_buff"
                             sattr.counter = 0                       
                             sattr.damage_mult = sattr.damage_mult + 0.1
                             sattr.move_time = sattr.move_time - 0.05
-                            sattr.percentage = sattr.percentage + 10
+                            sattr.percentage = sattr.percentage + 10                                                    
                         end
                     end
+                    if sattr.percentage == 10 and not entity:child("power_up_10") then
+                        entity:equip("power_up_10")                     
+                    elseif sattr.percentage == 20 and not entity:child("power_up_20") then
+                        entity:equip("power_up_20")
+                        local prev = entity:child("power_up_10")
+                        if prev then
+                            world:destroy(prev)
+                        end 
+                    elseif sattr.percentage == 40 and not entity:child("power_up_40")  then
+                        entity:equip("power_up_40")
+                        local prev = entity:child("power_up_20")
+                        if prev then
+                            world:destroy(prev)
+                        end
+                    elseif sattr.percentage == 60 and not entity:child("power_up_60") then
+                        entity:equip("power_up_60")
+                        local prev = entity:child("power_up_40")
+                        if prev then
+                            world:destroy(prev)
+                        end
+                    elseif sattr.percentage == 80 and not entity:child("power_up_80") then
+                        entity:equip("power_up_80")
+                        local prev = entity:child("power_up_60")
+                        if prev then
+                            world:destroy(prev)
+                        end
+                    elseif sattr.percentage == 100 and not entity:child("power_up_100") then
+                        entity:equip("power_up_100")
+                        local prev = entity:child("power_up_80")
+                        if prev then
+                            world:destroy(prev)
+                        end
+                    end 
                 end 
                 nova.log("Empowered done")
             end
-        ]],         
+        ]],
         on_die = [[
-            function ( self )   
+            function ( self )               
                 world:mark_destroy( self )
             end
         ]],
@@ -1305,32 +1404,32 @@ more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
     local exalted_traits = {
-        { "mod_exalted_adaptive", },
-        { "mod_exalted_blast_shield", },
-        { "mod_exalted_blinding", },
-        { "mod_exalted_crit_defence", },
-        { "mod_exalted_draining", },
+        -- { "mod_exalted_adaptive", },
+        -- { "mod_exalted_blast_shield", },
+        -- { "mod_exalted_blinding", },
+        -- { "mod_exalted_crit_defence", },
+        -- { "mod_exalted_draining", },
         { "mod_exalted_empowered", },
-        { "mod_exalted_gatekeeper", },
-        { "mod_exalted_phasing", },
-        { "mod_exalted_polluting", },
-        { "mod_exalted_pressuring", },
-        { "mod_exalted_radioactive", },
-        { "mod_exalted_respawn", },
-        { "mod_exalted_scorching", },
-        { "mod_exalted_screamer", },
-        { "mod_exalted_soldier_bayonet", },
-        { "mod_exalted_soldier_dodge", },
-        { "mod_exalted_spiky", },
-        { "mod_exalted_triggerhappy", },
-        { "mod_exalted_vampiric", },
+        -- { "mod_exalted_gatekeeper", },
+        -- { "mod_exalted_phasing", },
+        -- { "mod_exalted_polluting", },
+        -- { "mod_exalted_pressuring", },
+        -- { "mod_exalted_radioactive", },
+        -- { "mod_exalted_respawn", },
+        -- { "mod_exalted_scorching", },
+        -- { "mod_exalted_screamer", },
+        -- { "mod_exalted_soldier_bayonet", },
+        -- { "mod_exalted_soldier_dodge", },
+        -- { "mod_exalted_spiky", },
+        -- { "mod_exalted_triggerhappy", },
+        -- { "mod_exalted_vampiric", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
         make_exalted( entity, 3, exalted_traits )
     end
 end
 
- -- world.register_on_entity( more_exalted_test.on_entity )
+world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
     
@@ -1415,7 +1514,7 @@ function make_exalted( entity, dlevel, params, override )
         end
 
         local list = {}
-        make_more_exalted_list( entity, list, nightmare_diff )
+        -- make_more_exalted_list( entity, list, nightmare_diff )
         
         for _,k in ipairs( params ) do
             if ((not k.min) or k.min <= dlevel ) then
