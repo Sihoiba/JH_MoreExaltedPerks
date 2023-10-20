@@ -588,6 +588,12 @@ register_blueprint "mod_exalted_screamer"
             function ( self, actor, cmt, tgt, time )
                 nova.log("alerting on post command")
                 local level = world:get_level()
+				if actor.data and actor.data.disabled then
+					return
+				end	
+				if actor:child("disabled" ) then
+					return
+				end
                 for b in level:targets( actor, 32 ) do 
                     if b.data then
                         local data = b.data
