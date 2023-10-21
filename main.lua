@@ -636,10 +636,10 @@ register_blueprint "mod_exalted_perk_triggerhappy"
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "Triggerhappy",
-        desc = "increases shots by 1",
+        desc = "increases shots by 2",
     },
     attributes = {
-        shots = 1,
+        shots = 2,
     },
 }
 
@@ -1079,7 +1079,7 @@ register_blueprint "mod_exalted_adaptive"
     }
 }
 
-register_blueprint "apply_drain"
+register_blueprint "apply_drain_1"
 {
     text = {
         name    = "Apply Drain",
@@ -1118,7 +1118,54 @@ register_blueprint "apply_drain"
                     local rattr = resource.attributes
                     if rattr.value > 0 then
                         nova.log("draining resource")
-                        rattr.value = math.max( rattr.value - 2, 0 )
+                        rattr.value = math.max( rattr.value - 1, 0 )
+                    end
+                end 
+            end
+        ]],
+    }
+}
+
+register_blueprint "apply_drain_4"
+{
+    text = {
+        name    = "Apply Drain",
+        desc = "drains class skill",
+    },
+    callbacks = {
+        on_damage = [[
+            function ( unused, weapon, who, amount, source )
+                if who and who.data and who.data.is_player then
+                    local klass = gtk.get_klass_id( who )
+                    local resource
+                    
+                    if klass == "marine" then
+                        nova.log("is marine")
+                        resource = who:child( "resource_fury" )
+                    elseif klass == "scout" then
+                        resource = who:child( "resource_energy" )
+                    elseif klass == "tech" then
+                        resource = who:child( "resource_power" )
+                    else                
+                        local klass_hash = who.progression.klass
+                        nova.log(klass_hash)
+                        local klass_id   = world:resolve_hash( klass_hash )
+                        nova.log(klass_id)
+                        local k = blueprints[ klass_id ]
+                        if not k or not k.klass or not k.klass.res then
+                            return
+                        end
+                        resource = who:child( k.klass.res )
+                    end
+                    
+                    if not resource then 
+                        return
+                    end
+                    
+                    local rattr = resource.attributes
+                    if rattr.value > 0 then
+                        nova.log("draining resource")
+                        rattr.value = math.max( rattr.value - 4, 0 )
                     end
                 end 
             end
@@ -1132,18 +1179,42 @@ register_blueprint "mod_exalted_draining"
     text = {
         status = "DRAINING",
         sdesc  = "attacks drain class skill resource",
-    },  
+    },
+	data = {
+		check_precommand = true,
+	},
     callbacks = {
         on_activate = [=[
             function( self, entity )                
                 entity:attach( "mod_exalted_draining" )
                 for c in ecs:children( entity ) do
                     if ( c.weapon ) then
-                        c:attach("apply_drain")
+						if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+							c:attach("apply_drain_1")
+						else
+							c:attach("apply_drain_4")
+						end
                     end
                 end
             end     
         ]=],
+		-- attach drain to weapons added after this exalted perk
+		on_pre_command = [=[			
+			function ( self, actor, cmt, tgt )
+				if self.data.check_precommand then
+					for c in ecs:children( actor ) do
+						if c.weapon and not ( c:child( "apply_drain_1" ) or c:child( "apply_drain_4" ) ) then
+							if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+								c:attach("apply_drain_1")
+							else
+								c:attach("apply_drain_4")
+							end
+						end
+					end
+					self.data.check_precommand = false
+				end	
+			end
+		]=],	
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
@@ -1408,8 +1479,8 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_blast_shield", },
         -- { "mod_exalted_blinding", },
         -- { "mod_exalted_crit_defence", },
-        -- { "mod_exalted_draining", },
-        { "mod_exalted_empowered", },
+        { "mod_exalted_draining", },
+        -- { "mod_exalted_empowered", },
         -- { "mod_exalted_gatekeeper", },
         -- { "mod_exalted_phasing", },
         -- { "mod_exalted_polluting", },
