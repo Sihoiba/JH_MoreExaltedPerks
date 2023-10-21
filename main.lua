@@ -475,7 +475,7 @@ register_blueprint "mod_exalted_scorching"
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
                     if sattr.counter > 150 then
-                        nova.log("Scorching done spreading fire")
+                        nova.log("Scorching spreading fire")
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
                         if t then
@@ -683,7 +683,7 @@ register_blueprint "buff_irradiated"
     flags = { EF_NOPICKUP }, 
     text = {
         name    = "Irradiated",
-        desc    = "increases damage taken by {!+10%}/level",
+        desc    = "increases damage taken by irradiated percentage",
     },
     callbacks = {
         on_post_command = [[
@@ -696,9 +696,9 @@ register_blueprint "buff_irradiated"
         on_callback = [[
             function ( self )
                 local time_left = self.lifetime.time_left               
-                local level = math.min( math.floor( time_left / 300 ) + 1, 10 )
-                self.attributes.damage_mod = 1.0 + (0.1 * level)
-                self.attributes.percentage = level * 10
+                local level = math.min( math.floor( time_left / 200 ) + 1, 20 )
+                self.attributes.damage_mod = 1.0 + (0.05 * level)
+                self.attributes.percentage = level * 5
             end
         ]],
         on_die = [[
@@ -739,13 +739,13 @@ register_blueprint "mod_exalted_radioactive_aura"
                     return 0
                 end
                 local position = world:get_position( parent )
-                local ar       = area.around( position, 1 )
+                local ar       = area.around( position, 2 )
                 ar:clamp( level:get_area() )
 
                 for c in ar:coords() do
                     for e in level:entities( c ) do
-                        if e and e.data and e.data.ai and (e.data.ai.group == "player" or e.data.ai.group == "cri") then
-                            world:add_buff( e, "buff_irradiated", 300 )
+                        if e and e.data and e.data.ai and (e.data.ai.group == "player" or (e.data.ai.group == "cri" and not e.data.is_mechanical and not e:child(mod_exalted_radioactive) ) ) then
+                            world:add_buff( e, "buff_irradiated", (200/level:distance( parent, e )) )
                         end
                     end
                 end
@@ -761,7 +761,10 @@ register_blueprint "mod_exalted_radioactive"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "RADIOACTIVE",
-        sdesc  = "increases damage recieved on nearby entities",
+        sdesc  = "increases damage recieved on nearby entities, movement is {!5%} faster",
+    },
+    attributes = {
+        move_time = 0.95,
     },
     callbacks = {
         on_activate = [=[
@@ -871,7 +874,7 @@ register_blueprint "mod_exalted_vampiric"
                 end
             end     
         ]=],
-        -- attach drain to weapons added after this exalted perk
+        -- attach vampiric to weapons added after this exalted perk
         on_pre_command = [=[            
             function ( self, actor, cmt, tgt )
                 if self.data.check_precommand then
@@ -1109,7 +1112,6 @@ register_blueprint "apply_drain_1"
                     local resource
                     
                     if klass == "marine" then
-                        nova.log("is marine")
                         resource = who:child( "resource_fury" )
                     elseif klass == "scout" then
                         resource = who:child( "resource_energy" )
@@ -1117,9 +1119,7 @@ register_blueprint "apply_drain_1"
                         resource = who:child( "resource_power" )
                     else                
                         local klass_hash = who.progression.klass
-                        nova.log(klass_hash)
                         local klass_id   = world:resolve_hash( klass_hash )
-                        nova.log(klass_id)
                         local k = blueprints[ klass_id ]
                         if not k or not k.klass or not k.klass.res then
                             return
@@ -1133,7 +1133,6 @@ register_blueprint "apply_drain_1"
                     
                     local rattr = resource.attributes
                     if rattr.value > 0 then
-                        nova.log("draining resource")
                         rattr.value = math.max( rattr.value - 1, 0 )
                     end
                 end 
@@ -1156,7 +1155,6 @@ register_blueprint "apply_drain_4"
                     local resource
                     
                     if klass == "marine" then
-                        nova.log("is marine")
                         resource = who:child( "resource_fury" )
                     elseif klass == "scout" then
                         resource = who:child( "resource_energy" )
@@ -1164,9 +1162,7 @@ register_blueprint "apply_drain_4"
                         resource = who:child( "resource_power" )
                     else                
                         local klass_hash = who.progression.klass
-                        nova.log(klass_hash)
                         local klass_id   = world:resolve_hash( klass_hash )
-                        nova.log(klass_id)
                         local k = blueprints[ klass_id ]
                         if not k or not k.klass or not k.klass.res then
                             return
@@ -1180,7 +1176,6 @@ register_blueprint "apply_drain_4"
                     
                     local rattr = resource.attributes
                     if rattr.value > 0 then
-                        nova.log("draining resource")
                         rattr.value = math.max( rattr.value - 4, 0 )
                     end
                 end 
@@ -1501,7 +1496,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_phasing", },
         -- { "mod_exalted_polluting", },
         -- { "mod_exalted_pressuring", },
-        -- { "mod_exalted_radioactive", },
+        { "mod_exalted_radioactive", },
         -- { "mod_exalted_respawn", },
         -- { "mod_exalted_scorching", },
         -- { "mod_exalted_screamer", },
@@ -1509,7 +1504,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_soldier_dodge", },
         -- { "mod_exalted_spiky", },
         -- { "mod_exalted_triggerhappy", },
-        { "mod_exalted_vampiric", },
+        -- { "mod_exalted_vampiric", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
         make_exalted( entity, 3, exalted_traits )
