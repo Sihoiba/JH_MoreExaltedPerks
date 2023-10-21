@@ -948,6 +948,9 @@ register_blueprint "mod_exalted_adaptive_impact_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
+                local types = {"slash.resist", "pierce.resist", "plasma.resist"}
+                local weak = table.remove( types, math.random( #types ) ) 
+                self.attributes[weak] = -25
                 for c in ecs:children( target ) do  
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -981,6 +984,9 @@ register_blueprint "mod_exalted_adaptive_slash_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
+                local types = {"impact.resist", "pierce.resist", "plasma.resist"}
+                local weak = table.remove( types, math.random( #types ) ) 
+                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1014,6 +1020,9 @@ register_blueprint "mod_exalted_adaptive_pierce_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
+                local types = {"slash.resist", "impact.resist", "plasma.resist"}
+                local weak = table.remove( types, math.random( #types ) ) 
+                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1047,6 +1056,9 @@ register_blueprint "mod_exalted_adaptive_plasma_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
+                local types = {"slash.resist", "pierce.resist", "impact.resist"}
+                local weak = table.remove( types, math.random( #types ) ) 
+                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1063,7 +1075,7 @@ register_blueprint "mod_exalted_adaptive"
     flags = { EF_NOPICKUP }, 
     text = {
         status = "ADAPTIVE",
-        sdesc  = "gains damage resistance to last weapon damage type hit by",
+        sdesc  = "gains damage resistance to last weapon damage type hit by. Plasma resist does not show on stats screen.",
     },   
     callbacks = {
         on_activate = [=[
@@ -1486,7 +1498,7 @@ more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
     local exalted_traits = {
-        -- { "mod_exalted_adaptive", },
+        { "mod_exalted_adaptive", },
         -- { "mod_exalted_blast_shield", },
         -- { "mod_exalted_blinding", },
         -- { "mod_exalted_crit_defence", },
@@ -1496,7 +1508,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_phasing", },
         -- { "mod_exalted_polluting", },
         -- { "mod_exalted_pressuring", },
-        { "mod_exalted_radioactive", },
+        -- { "mod_exalted_radioactive", },
         -- { "mod_exalted_respawn", },
         -- { "mod_exalted_scorching", },
         -- { "mod_exalted_screamer", },
