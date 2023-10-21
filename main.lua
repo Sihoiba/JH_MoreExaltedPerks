@@ -857,6 +857,9 @@ register_blueprint "mod_exalted_vampiric"
         status = "VAMPIRIC",
         sdesc  = "attacks heal the attacker based on damage dealt",
     },  
+    data = {
+        check_precommand = true,
+    },
     callbacks = {
         on_activate = [=[
             function( self, entity )                
@@ -867,6 +870,19 @@ register_blueprint "mod_exalted_vampiric"
                     end
                 end
             end     
+        ]=],
+        -- attach drain to weapons added after this exalted perk
+        on_pre_command = [=[            
+            function ( self, actor, cmt, tgt )
+                if self.data.check_precommand then
+                    for c in ecs:children( actor ) do
+                        if c.weapon and not c:child( "apply_vampiric" )then
+                            c:attach( "apply_vampiric" )
+                        end
+                    end
+                    self.data.check_precommand = false
+                end 
+            end
         ]=],
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
@@ -1180,41 +1196,41 @@ register_blueprint "mod_exalted_draining"
         status = "DRAINING",
         sdesc  = "attacks drain class skill resource",
     },
-	data = {
-		check_precommand = true,
-	},
+    data = {
+        check_precommand = true,
+    },
     callbacks = {
         on_activate = [=[
             function( self, entity )                
                 entity:attach( "mod_exalted_draining" )
                 for c in ecs:children( entity ) do
                     if ( c.weapon ) then
-						if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
-							c:attach("apply_drain_1")
-						else
-							c:attach("apply_drain_4")
-						end
+                        if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+                            c:attach("apply_drain_1")
+                        else
+                            c:attach("apply_drain_4")
+                        end
                     end
                 end
             end     
         ]=],
-		-- attach drain to weapons added after this exalted perk
-		on_pre_command = [=[			
-			function ( self, actor, cmt, tgt )
-				if self.data.check_precommand then
-					for c in ecs:children( actor ) do
-						if c.weapon and not ( c:child( "apply_drain_1" ) or c:child( "apply_drain_4" ) ) then
-							if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
-								c:attach("apply_drain_1")
-							else
-								c:attach("apply_drain_4")
-							end
-						end
-					end
-					self.data.check_precommand = false
-				end	
-			end
-		]=],	
+        -- attach drain to weapons added after this exalted perk
+        on_pre_command = [=[            
+            function ( self, actor, cmt, tgt )
+                if self.data.check_precommand then
+                    for c in ecs:children( actor ) do
+                        if c.weapon and not ( c:child( "apply_drain_1" ) or c:child( "apply_drain_4" ) ) then
+                            if c.attributes and c.attributes.shots and c.attributes.shots > 1 then
+                                c:attach("apply_drain_1")
+                            else
+                                c:attach("apply_drain_4")
+                            end
+                        end
+                    end
+                    self.data.check_precommand = false
+                end 
+            end
+        ]=],    
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
@@ -1479,7 +1495,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_blast_shield", },
         -- { "mod_exalted_blinding", },
         -- { "mod_exalted_crit_defence", },
-        { "mod_exalted_draining", },
+        -- { "mod_exalted_draining", },
         -- { "mod_exalted_empowered", },
         -- { "mod_exalted_gatekeeper", },
         -- { "mod_exalted_phasing", },
@@ -1493,7 +1509,7 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_soldier_dodge", },
         -- { "mod_exalted_spiky", },
         -- { "mod_exalted_triggerhappy", },
-        -- { "mod_exalted_vampiric", },
+        { "mod_exalted_vampiric", },
     }
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
         make_exalted( entity, 3, exalted_traits )
