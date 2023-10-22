@@ -544,6 +544,12 @@ register_blueprint "mod_exalted_pressuring"
         on_post_command = [=[
             function ( self, actor, cmt, tgt, time )
                 -- nova.log("pressured on post command")
+                if actor.data and actor.data.disabled then
+                    return
+                end
+                if actor:child( "disabled" ) or actor:child( "friendly" ) then
+                    return
+                end
                 local level = world:get_level()
                 for b in level:targets( actor, 32 ) do
                     if b.data then
@@ -1549,10 +1555,13 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     table.insert( list, "mod_exalted_crit_defence" )
     table.insert( list, "mod_exalted_draining" )
     table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
-    table.insert( list, "mod_exalted_gatekeeper" )
     table.insert( list, "mod_exalted_pressuring" )
-    table.insert( list, "mod_exalted_radioactive" )
     table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
+
+    if not entity:child("terminal_bot_rexio") then
+        table.insert( list, "mod_exalted_radioactive" )
+        table.insert( list, "mod_exalted_gatekeeper" )
+    end
 
     if entity.data and entity.data.ai and entity.data.ai.idle ~= "turret_idle" then
         table.insert( list, "mod_exalted_phasing" )
@@ -1569,9 +1578,12 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         table.insert( list, "mod_exalted_soldier_bayonet" )
     end
 
-    if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
+    if entity.data and entity.data.ai and entity.data.ai.group == "demon" and not entity:child("terminal_bot_rexio") then
         table.insert( list, "mod_exalted_polluting" )
         table.insert( list, "mod_exalted_scorching" )
+    end
+
+    if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
         table.insert( list, "mod_exalted_spiky" )
     end
 
@@ -1592,7 +1604,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         end
     end
 
-    if not nightmare_diff and entity.data and not entity.data.is_mechanical then
+    if not nightmare_diff and entity.data and not entity.data.is_mechanical and not entity:child("terminal_bot_rexio") then
         table.insert( list, { "mod_exalted_respawn", tag = "respawn" } )
     end
 end
