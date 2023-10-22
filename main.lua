@@ -78,19 +78,24 @@ function safe_phase_coord_spiral_out( self, start_coord, min_range, max_range )
     end
 end
 
-register_blueprint "buff_blinded"
+register_blueprint "buff_dazzled_1"
 {
     flags = { EF_NOPICKUP },
     text = {
-        name    = "Blinded",
+        name    = "Dazzled",
         desc    = "reduces vision range",
     },
     callbacks = {
         on_attach = [[
             function ( self, target )
-                local level = world:get_level()
-                self.attributes.vision = -( target:attribute( "vision" ) - ( level.level_info.light_range -3 ) )
-                self.attributes.min_vision = - ( target:attribute("min_vision" ) - 2 )
+                local d3 = target:child("buff_dazzled_3")
+                if d3 then
+                    world:mark_destroy( self )
+                else
+                    local level = world:get_level()
+                    self.attributes.vision = -( target:attribute( "vision" ) - ( level.level_info.light_range -1 ) )
+                    self.attributes.min_vision = - ( target:attribute("min_vision" ) - 1 )
+                end
             end
         ]],
         on_die = [[
@@ -107,18 +112,65 @@ register_blueprint "buff_blinded"
     ui_buff = {
         color = WHITE,
         style = 1,
+        attribute = "level",
     },
     attributes = {
+        level = 1,
     },
 }
 
-register_blueprint "apply_blinded"
+register_blueprint "buff_dazzled_3"
+{
+    flags = { EF_NOPICKUP },
+    text = {
+        name    = "Dazzled",
+        desc    = "reduces vision range",
+    },
+    callbacks = {
+        on_attach = [[
+            function ( self, target )
+                local level = world:get_level()
+                self.attributes.vision = -( target:attribute( "vision" ) - ( level.level_info.light_range -3 ) )
+                self.attributes.min_vision = - ( target:attribute("min_vision" ) - 2 )
+                local d1 = target:child("buff_dazzled_1")
+                if d1 then
+                    world:mark_destroy( d1 )
+                end
+                world:flush_destroy()
+            end
+        ]],
+        on_die = [[
+            function ( self )
+                world:mark_destroy( self )
+            end
+        ]],
+        on_enter_level = [[
+            function ( self )
+                world:mark_destroy( self )
+            end
+        ]],
+    },
+    ui_buff = {
+        color = WHITE,
+        style = 1,
+        attribute = "level",
+    },
+    attributes = {
+        level = 3,
+    },
+}
+
+register_blueprint "apply_dazzled"
 {
     callbacks = {
         on_damage = [[
             function ( unused, weapon, who, amount, source )
                 if who and who.data and who.data.is_player then
-                    world:add_buff( who, "buff_blinded", 500 )
+                    if weapon.weapon and weapon.weapon.type == world:hash("melee") then
+                        world:add_buff( who, "buff_dazzled_3", 500 )
+                    else
+                        world:add_buff( who, "buff_dazzled_1", 200 )
+                    end
                 end
             end
         ]],
@@ -130,29 +182,40 @@ register_blueprint "mod_exalted_blinding"
     flags = { EF_NOPICKUP },
     text = {
         status = "BLINDING",
-        sdesc  = "melee attacks apply blinded status",
+        sdesc  = "attacks reduce vision range",
+    },
+    data = {
+        check_precommand = true,
     },
     callbacks = {
         on_activate = [=[
             function( self, entity )
-                local has_melee = false
+                nova.log("Attaching blinding")
                 for c in ecs:children( entity ) do
-                    nova.log("Checking for melee weapon "..entity:get_name())
-                    if c.weapon and (c.weapon.type == world:hash("melee") ) then
-                        c:attach("apply_blinded")
-                        has_melee = true
+                    if c.weapon then
+                        c:attach("apply_dazzled")
                     end
                 end
-                if has_melee then
-                    nova.log("Attaching blinding")
-                    entity:attach( "mod_exalted_blinding" )
+                entity:attach( "mod_exalted_blinding" )
+            end
+        ]=],
+        -- attach dazzling to weapons added after this exalted perk
+        on_pre_command = [=[
+            function ( self, actor, cmt, tgt )
+                if self.data.check_precommand then
+                    for c in ecs:children( actor ) do
+                        if c.weapon and not c:child( "apply_dazzled" )then
+                            c:attach( "apply_dazzled" )
+                        end
+                    end
+                    self.data.check_precommand = false
                 end
             end
         ]=],
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    local blinding_perk = c:child( "apply_blinded" )
+                    local blinding_perk = c:child( "apply_dazzled" )
                     if blinding_perk then
                         world:destroy( blinding_perk )
                     end
@@ -503,7 +566,7 @@ register_blueprint "buff_pressured"
     flags = { EF_NOPICKUP },
     text = {
         name    = "Pressured",
-        desc    = "increases reload and consumable use time by 50%, weapon swap time by 25%",
+        desc    = "increases reload and consumable use time by 50%, weapon swap time by 200%",
     },
     callbacks = {
         on_die = [[
@@ -523,7 +586,7 @@ register_blueprint "buff_pressured"
     },
     attributes = {
         reload_time = 1.5,
-        swap_time = 1.25,
+        swap_time = 2,
         use_time = 1.5,
     },
 }
@@ -671,7 +734,10 @@ register_blueprint "mod_exalted_triggerhappy"
     flags = { EF_NOPICKUP },
     text = {
         status = "TRIGGERHAPPY",
-        sdesc  = "increases shots fired by 1 on multishot attacks",
+        sdesc  = "increases shots fired by 2 on multishot attacks",
+    },
+    data = {
+        check_precommand = true,
     },
     callbacks = {
         on_activate = [=[
@@ -685,6 +751,19 @@ register_blueprint "mod_exalted_triggerhappy"
                 end
                 if multishot then
                     entity:attach( "mod_exalted_triggerhappy" )
+                end
+            end
+        ]=],
+        -- attach triggerhappy to weapons added after this exalted perk
+        on_pre_command = [=[
+            function ( self, actor, cmt, tgt )
+                if self.data.check_precommand then
+                    for c in ecs:children( actor ) do
+                        if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 and not c:child( "mod_exalted_perk_triggerhappy" )then
+                            c:attach( "mod_exalted_perk_triggerhappy" )
+                        end
+                    end
+                    self.data.check_precommand = false
                 end
             end
         ]=],
@@ -1523,16 +1602,16 @@ function more_exalted_test.on_entity( entity )
     local exalted_traits = {
         -- { "mod_exalted_adaptive", },
         -- { "mod_exalted_blast_shield", },
-        -- { "mod_exalted_blinding", },
+        { "mod_exalted_blinding", },
         -- { "mod_exalted_crit_defence", },
-        -- { "mod_exalted_draining", },
+         { "mod_exalted_draining", },
         -- { "mod_exalted_empowered", },
         -- { "mod_exalted_gatekeeper", },
         -- { "mod_exalted_phasing", },
         -- { "mod_exalted_polluting", },
         -- { "mod_exalted_pressuring", },
         -- { "mod_exalted_radioactive", },
-         { "mod_exalted_respawn", },
+        -- { "mod_exalted_respawn", },
         -- { "mod_exalted_scorching", },
         -- { "mod_exalted_screamer", },
         -- { "mod_exalted_soldier_bayonet", },
@@ -1543,6 +1622,9 @@ function more_exalted_test.on_entity( entity )
     }
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
         make_exalted( entity, 3, exalted_traits )
+    end
+    if entity.data and entity.data.ai and entity:child("fiend_claws") then
+        make_exalted( entity, 1, {"exalted_fiend_weapon_iceball"} )
     end
 end
 
