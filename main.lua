@@ -245,7 +245,7 @@ register_blueprint "exalted_tainted_mark"
     callbacks = {
         on_timer = [[
             function ( self, first )
-                nova.log("exalted tainted on timer")
+                -- nova.log("exalted tainted on timer")
                 if first then return 500 end
                 local level = world:get_level()
                 local pos   = world:get_position( self )
@@ -267,11 +267,11 @@ register_blueprint "exalted_tainted_mark"
                                 summon.minimap.always = true
                             end
                         end
-                        nova.log("exalted tainted on done")
+                        -- nova.log("exalted tainted on done")
                         return 0
                     end
                 end
-                nova.log("exalted tainted on done")
+                -- nova.log("exalted tainted on done")
                 return 500
             end
         ]],
@@ -352,7 +352,7 @@ register_blueprint "mod_exalted_phasing"
                 local level = world:get_level()
                 local player = world:get_player()
                 local enemy_count = level.level_info.enemies * 1
-                nova.log("on action mod phasing count before: "..enemy_count)
+                -- nova.log("on action mod phasing count before: "..enemy_count)
                 if time_passed > 0 and entity.target and entity.target.entity and entity.target.entity == player and level:can_see_entity( entity, entity.target.entity, 8 ) then
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
@@ -370,7 +370,7 @@ register_blueprint "mod_exalted_phasing"
                         end
                     end
                 end
-                nova.log("on action mod phasing count after: "..enemy_count)
+                -- nova.log("on action mod phasing count after: "..enemy_count)
             end
         ]],
         on_receive_damage = [[
@@ -381,7 +381,7 @@ register_blueprint "mod_exalted_phasing"
                 local enemy_count = level.level_info.enemies * 1
                 local player = world:get_player()
                 local eh = entity.health
-                nova.log("on damage mod phasing count before: "..enemy_count)
+                -- nova.log("on damage mod phasing count before: "..enemy_count)
                 if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
                     local entityPos = world:get_position( entity )
@@ -395,7 +395,7 @@ register_blueprint "mod_exalted_phasing"
                         end
                     end
                 end
-                nova.log("on damage mod phasing count after: "..enemy_count)
+                -- nova.log("on damage mod phasing count after: "..enemy_count)
             end
         ]],
     },
@@ -423,7 +423,7 @@ register_blueprint "mod_exalted_polluting"
         ]],
         on_action = [[
             function ( self, entity, time_passed, last )
-                nova.log("Pollution checking on action")
+                -- nova.log("Pollution checking on action")
                 local level = world:get_level()
                 local player = world:get_player()
                 if time_passed > 0 then
@@ -445,7 +445,7 @@ register_blueprint "mod_exalted_polluting"
                         end
                     end
                 end
-                nova.log("Pollution done spreading acid")
+                -- nova.log("Pollution done spreading acid")
             end
         ]],
     },
@@ -473,7 +473,7 @@ register_blueprint "mod_exalted_scorching"
         ]],
         on_action = [[
             function ( self, entity, time_passed, last )
-                nova.log("Scorching checking on action")
+                -- nova.log("Scorching checking on action")
                 local level = world:get_level()
                 local player = world:get_player()
                 if time_passed > 0 then
@@ -490,7 +490,7 @@ register_blueprint "mod_exalted_scorching"
                         end
                     end
                 end
-                nova.log("Scorching done making fire")
+                -- nova.log("Scorching done making fire")
             end
         ]],
     },
@@ -541,7 +541,7 @@ register_blueprint "mod_exalted_pressuring"
         ]],
         on_post_command = [=[
             function ( self, actor, cmt, tgt, time )
-                nova.log("pressured on post command")
+                -- nova.log("pressured on post command")
                 local level = world:get_level()
                 for b in level:targets( actor, 32 ) do
                     if b.data then
@@ -551,7 +551,7 @@ register_blueprint "mod_exalted_pressuring"
                         end
                     end
                 end
-                nova.log("pressured on post command done")
+                -- nova.log("pressured on post command done")
             end
         ]=],
     }
@@ -592,7 +592,7 @@ register_blueprint "mod_exalted_screamer"
         ]],
         on_post_command = [=[
             function ( self, actor, cmt, tgt, time )
-                nova.log("alerting on post command")
+                -- nova.log("alerting on post command")
                 local level = world:get_level()
                 if actor.data and actor.data.disabled then
                     return
@@ -609,10 +609,19 @@ register_blueprint "mod_exalted_screamer"
                             actor:attach( w )
                             world:get_level():fire( actor, p, w )
                             world:destroy( w )
+
+                            for e in level:beings() do
+                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state == "idle" then
+                                    nova.log("One enemy is alerted and hunting: "..e:get_name())
+                                    e.target.entity = world:get_player()
+                                    e.data.ai.state = "find"
+                                    break
+                                end
+                            end
                         end
                     end
                 end
-                nova.log("alerting on post command done")
+                -- nova.log("alerting on post command done")
             end
         ]=],
     }
@@ -694,9 +703,9 @@ register_blueprint "buff_irradiated"
     callbacks = {
         on_post_command = [[
             function ( self, actor, cmt, tgt, time )
-                nova.log("radiation on post command")
+                -- nova.log("radiation on post command")
                 world:callback( self )
-                nova.log("radiation on post command done")
+                -- nova.log("radiation on post command done")
             end
         ]],
         on_callback = [[
@@ -734,14 +743,14 @@ register_blueprint "mod_exalted_radioactive_aura"
     callbacks = {
         on_timer = [[
             function ( self, first )
-                nova.log("radiation on timer")
+                -- nova.log("radiation on timer")
                 if first then return 1 end
                 if not self then return 0 end
                 local level    = world:get_level()
                 local parent   = self:parent()
                 if not level:is_alive( parent ) then
                     world:mark_destroy( self )
-                    nova.log("radiation on done")
+                    -- nova.log("radiation on done")
                     return 0
                 end
                 local position = world:get_position( parent )
@@ -755,7 +764,7 @@ register_blueprint "mod_exalted_radioactive_aura"
                         end
                     end
                 end
-                nova.log("radiation on done")
+                -- nova.log("radiation on done")
                 return 50
             end
         ]],
@@ -800,7 +809,7 @@ register_blueprint "mod_exalted_dodge_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
-                nova.log("Exalted dodge checking")
+                -- nova.log("Exalted dodge checking")
                 if time_passed > 0 then
                     local evasion = self.attributes.evasion
                     if evasion > 0 then
@@ -811,7 +820,7 @@ register_blueprint "mod_exalted_dodge_buff"
                         end
                     end
                 end
-                nova.log("Exalted dodge done")
+                -- nova.log("Exalted dodge done")
             end
         ]],
         on_move = [[
@@ -1333,7 +1342,7 @@ register_blueprint "mod_exalted_empowered_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
-                nova.log("Empowered on action")
+                -- nova.log("Empowered on action")
                 local sattr = self.attributes
                 if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
                     nova.log("Empowered encountered player")
@@ -1383,7 +1392,7 @@ register_blueprint "mod_exalted_empowered_buff"
                         end
                     end
                 end
-                nova.log("Empowered done")
+                -- nova.log("Empowered done")
             end
         ]],
         on_die = [[
@@ -1511,13 +1520,13 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_draining", },
         -- { "mod_exalted_empowered", },
         -- { "mod_exalted_gatekeeper", },
-        { "mod_exalted_phasing", },
+        -- { "mod_exalted_phasing", },
         -- { "mod_exalted_polluting", },
         -- { "mod_exalted_pressuring", },
         -- { "mod_exalted_radioactive", },
         -- { "mod_exalted_respawn", },
         -- { "mod_exalted_scorching", },
-        -- { "mod_exalted_screamer", },
+        { "mod_exalted_screamer", },
         -- { "mod_exalted_soldier_bayonet", },
         -- { "mod_exalted_soldier_dodge", },
         -- { "mod_exalted_spiky", },
