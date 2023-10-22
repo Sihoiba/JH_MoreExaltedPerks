@@ -5,7 +5,7 @@ Adds several new exalted traits to add more variety to the experience (especiall
 * ALERTING - Former and Robot only. Increased health and makes a loud noise when it sees the player to attract other enemies. Also makes one enemy of the same class hunt the player.
 * BAYONET - Formers only. Changes their normal ranged weapon based melee attack, to a 20 damage piercing melee attack.
 * BLASTGUARD - Reduces splash damage by 75%
-* BLINDING - Enemies inflict Dazzled status on melee attacks hit which reduces vision range.
+* BLINDING - Enemies inflict Dazzled status on attacks hit which reduces vision range. Melee attacks reduce vision range more than ranged attacks.
 * CRITRESIST - Reduces incoming crit chance by 100%.
 * DODGE - Formers only. Gains dodge on move like players.
 * DRAINING - Drains player resource on hit
