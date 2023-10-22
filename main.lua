@@ -1620,6 +1620,61 @@ register_blueprint "mod_exalted_gatekeeper"
     },
 }
 
+register_blueprint "mod_exalted_sniper_buff"
+{
+    flags = { EF_NOPICKUP },
+    text = {
+        name = "SNIPING",
+        desc = "increases accuracy, damage and evasion",
+    },
+    ui_buff = {
+        color     = LIGHTBLUE,
+        attribute = "percentage",
+        priority  = 100,
+    },
+    attributes = {
+        accuracy = 0,
+        damage_mult = 1.0,
+        evasion = 0,
+        percentage = 0,
+    },
+    callbacks = {
+        on_pre_command = [=[
+            function ( self, actor, cmt, tgt )
+                local level = world:get_level()
+                local player = world:get_player()
+                local light_range = level.level_info.light_range
+                if level:can_see_entity( actor, player, 8 ) then
+                    local distance = math.min( level:distance( actor, player ), light_range )
+                    local factor = ( distance - 1 )/( light_range - 1 )
+                    nova.log("distance: "..distance..", lightrange: "..light_range..", factor: "..factor)
+                    self.attributes.accuracy = math.ceil( 25 * factor )
+                    self.attributes.damage_mult = 1 + ( 0.50 * factor )
+                    self.attributes.evasion = math.ceil( 50 * factor )
+                    self.attributes.percentage = math.ceil( 100 * factor )
+                end
+            end
+        ]=],
+    },
+}
+
+register_blueprint "mod_exalted_sniper"
+{
+    flags = { EF_NOPICKUP },
+    text = {
+        status = "SNIPER",
+        sdesc  = "increased accuracy, damage and evasion the further from the player",
+    },
+    callbacks = {
+        on_activate = [=[
+            function( self, entity )
+                entity:attach( "mod_exalted_sniper" )
+                entity:equip( "mod_exalted_sniper_buff" )
+            end
+        ]=],
+    },
+}
+
 more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
@@ -1638,6 +1693,7 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_respawn", },
         { "mod_exalted_scorching", },
         { "mod_exalted_screamer", },
+        { "mod_exalted_sniper" },
         { "mod_exalted_soldier_bayonet", },
         { "mod_exalted_soldier_dodge", },
         { "mod_exalted_spiky", },
@@ -1645,14 +1701,14 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_vampiric", },
     }
     local level = world:get_level()
-    if level.data and level.data.gatekeeper_spawned then
-        nova.log("already gatekeeper present")
-    end
-    if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  and not level.data.gatekeeper_spawned then
-        make_exalted( entity, 3, exalted_traits )
-    end
-    if entity.data and entity.data.ai and entity:child("fiend_claws") then
-        make_exalted( entity, 1, {"exalted_fiend_weapon_iceball"} )
+    -- if level.data and level.data.gatekeeper_spawned then
+        -- nova.log("already gatekeeper present")
+    -- end
+    -- if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  and not level.data.gatekeeper_spawned then
+        -- make_exalted( entity, 3, exalted_traits )
+    -- end
+    if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
+        make_exalted( entity, 1, {"mod_exalted_sniper"} )
     end
 end
 
@@ -1668,6 +1724,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
 
     table.insert( list, { "mod_exalted_adaptive", min = 4, } )
     table.insert( list, "mod_exalted_blast_shield" )
+    table.insert( list, "mod_exalted_blinding" )
     table.insert( list, "mod_exalted_crit_defence" )
     table.insert( list, "mod_exalted_draining" )
     table.insert( list, { "mod_exalted_empowered", min = 2, tag = "health" } )
@@ -1712,15 +1769,16 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     end
 
     for c in ecs:children( entity ) do
+        if c.weapon and (c.weapon.type ~= world:hash("melee") ) then
+            table.insert( list, { "mod_exalted_sniper", min = 6, } )
+        end
         if c.weapon and c.attributes and c.attributes.shots and c.attributes.shots > 1 then
             table.insert( list, "mod_exalted_triggerhappy" )
         end
     end
 
     for c in ecs:children( entity ) do
-        if c.weapon and (c.weapon.type == world:hash("melee") ) then
-            table.insert( list, "mod_exalted_blinding" )
-        end
+
     end
 
     if not nightmare_diff and entity.data and not entity.data.is_mechanical and not entity:child("terminal_bot_rexio") then
