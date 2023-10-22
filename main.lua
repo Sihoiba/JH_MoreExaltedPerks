@@ -1530,6 +1530,12 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
                 if who == world:get_player() then
                     ui:set_hint( self.text.failure, 2001, 0 )
                     world:play_voice( "vo_refuse" )
+                    for b in level:beings() do
+                        if b:child("mod_exalted_gatekeeper") and not (b.minimap and b.minimap.always) then
+                            b:equip("tracker")
+                            b.minimap.always = true
+                        end
+                    end
                 end
                 return 1
             end
@@ -1552,7 +1558,22 @@ register_blueprint "mod_exalted_gatekeeper"
     flags = { EF_NOPICKUP },
     text = {
         status = "GATEKEEPER",
-        sdesc  = "locks main and branch elevators until it has been slain",
+        sdesc  = "Meaner, tougher and locks main and branch elevators until it has been slain",
+    },
+    attributes = {
+        damage_mult = 1.25,
+        splash_mod = 0.75,
+        armor = {
+            2,
+        },
+        resist = {
+            acid   = 25,
+            toxin  = 25,
+            ignite = 25,
+            bleed  = 25,
+            emp    = 25,
+            cold   = 25,
+        },
     },
     callbacks = {
         on_activate = [=[
@@ -1561,7 +1582,7 @@ register_blueprint "mod_exalted_gatekeeper"
                 local lock = false
                 for e in level:entities() do
                     if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") ) then
+                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("elevator_broken") or e:child("elevator_secure") ) then
                             if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
                                 e:attach("mod_exalted_gatekeeper_elevator_inactive")
                             end
@@ -1570,7 +1591,10 @@ register_blueprint "mod_exalted_gatekeeper"
                     end
                 end
                 if lock then
+                    level.data.gatekeeper_spawned = true
                     entity:attach( "mod_exalted_gatekeeper" )
+                    entity.attributes.health = math.floor(entity.attributes.health * 1.25)
+                    entity.health.current = entity.attributes.health
                 end
             end
         ]=],
@@ -1600,27 +1624,31 @@ more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
     local exalted_traits = {
-        -- { "mod_exalted_adaptive", },
-        -- { "mod_exalted_blast_shield", },
+        { "mod_exalted_adaptive", },
+        { "mod_exalted_blast_shield", },
         { "mod_exalted_blinding", },
-        -- { "mod_exalted_crit_defence", },
-         { "mod_exalted_draining", },
-        -- { "mod_exalted_empowered", },
-        -- { "mod_exalted_gatekeeper", },
-        -- { "mod_exalted_phasing", },
-        -- { "mod_exalted_polluting", },
-        -- { "mod_exalted_pressuring", },
-        -- { "mod_exalted_radioactive", },
-        -- { "mod_exalted_respawn", },
-        -- { "mod_exalted_scorching", },
-        -- { "mod_exalted_screamer", },
-        -- { "mod_exalted_soldier_bayonet", },
-        -- { "mod_exalted_soldier_dodge", },
-        -- { "mod_exalted_spiky", },
-        -- { "mod_exalted_triggerhappy", },
-        -- { "mod_exalted_vampiric", },
+        { "mod_exalted_crit_defence", },
+        { "mod_exalted_draining", },
+        { "mod_exalted_empowered", },
+        { "mod_exalted_gatekeeper", },
+        { "mod_exalted_phasing", },
+        { "mod_exalted_polluting", },
+        { "mod_exalted_pressuring", },
+        { "mod_exalted_radioactive", },
+        { "mod_exalted_respawn", },
+        { "mod_exalted_scorching", },
+        { "mod_exalted_screamer", },
+        { "mod_exalted_soldier_bayonet", },
+        { "mod_exalted_soldier_dodge", },
+        { "mod_exalted_spiky", },
+        { "mod_exalted_triggerhappy", },
+        { "mod_exalted_vampiric", },
     }
-    if entity.data and entity.data.ai and entity.data.ai.group ~= "player" then
+    local level = world:get_level()
+    if level.data and level.data.gatekeeper_spawned then
+        nova.log("already gatekeeper present")
+    end
+    if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  and not level.data.gatekeeper_spawned then
         make_exalted( entity, 3, exalted_traits )
     end
     if entity.data and entity.data.ai and entity:child("fiend_claws") then
@@ -1628,9 +1656,15 @@ function more_exalted_test.on_entity( entity )
     end
 end
 
-world.register_on_entity( more_exalted_test.on_entity )
+-- world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
+
+    local level = world:get_level()
+
+    if level.data and level.data.gatekeeper_spawned then
+        nova.log("already gatekeeper present")
+    end
 
     table.insert( list, { "mod_exalted_adaptive", min = 4, } )
     table.insert( list, "mod_exalted_blast_shield" )
@@ -1642,6 +1676,9 @@ function make_more_exalted_list( entity, list, nightmare_diff )
 
     if not entity:child("terminal_bot_rexio") then
         table.insert( list, "mod_exalted_radioactive" )
+    end
+
+    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") then
         table.insert( list, "mod_exalted_gatekeeper" )
     end
 
@@ -1719,7 +1756,7 @@ function make_exalted( entity, dlevel, params, override )
         end
 
         local list = {}
-        -- make_more_exalted_list( entity, list, nightmare_diff )
+        make_more_exalted_list( entity, list, nightmare_diff )
 
         for _,k in ipairs( params ) do
             if ((not k.min) or k.min <= dlevel ) then
