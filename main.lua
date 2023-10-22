@@ -254,7 +254,8 @@ register_blueprint "exalted_tainted_mark"
                     if self.attributes.counter <= 0 then
                         local ndata = self.data.nightmare
                         if ndata.id then
-                            local summon = level:add_entity( ndata.id, pos, nil, ndata.tier * 1000 + ndata.depth + ndata.tier * 2 )
+                            nova.log("add entity with "..(ndata.depth + ndata.tier * 2))
+                            local summon = level:add_entity( ndata.id, pos, nil, ndata.depth + ndata.tier * 2 )
                             summon.data.resurrected = true
                             summon.attributes.experience_value = ndata.xp
                             summon.data.exalted = nil
@@ -308,7 +309,8 @@ register_blueprint "mod_exalted_respawn"
                     local n1    = level:place_entity( "exalted_tainted_mark", drop )
                     if n1 then
                         n1.data.nightmare.id    = entity.data.nightmare.id
-                        n1.data.nightmare.tier  = 1
+                        local ep = world.data.level[ world.data.current ].episode
+                        n1.data.nightmare.tier  = ep + 1
                         n1.data.nightmare.depth = level.level_info.dlevel
                         n1.data.nightmare.xp    = 0
                         local mod = 1
@@ -597,7 +599,7 @@ register_blueprint "mod_exalted_screamer"
                 if actor.data and actor.data.disabled then
                     return
                 end
-                if actor:child("disabled" ) then
+                if actor:child( "disabled" ) or actor:child( "friendly" ) then
                     return
                 end
                 for b in level:targets( actor, 32 ) do
@@ -611,7 +613,7 @@ register_blueprint "mod_exalted_screamer"
                             world:destroy( w )
 
                             for e in level:beings() do
-                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state == "idle" then
+                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) then
                                     nova.log("One enemy is alerted and hunting: "..e:get_name())
                                     e.target.entity = world:get_player()
                                     e.data.ai.state = "find"
@@ -1524,9 +1526,9 @@ function more_exalted_test.on_entity( entity )
         -- { "mod_exalted_polluting", },
         -- { "mod_exalted_pressuring", },
         -- { "mod_exalted_radioactive", },
-        -- { "mod_exalted_respawn", },
+         { "mod_exalted_respawn", },
         -- { "mod_exalted_scorching", },
-        { "mod_exalted_screamer", },
+        -- { "mod_exalted_screamer", },
         -- { "mod_exalted_soldier_bayonet", },
         -- { "mod_exalted_soldier_dodge", },
         -- { "mod_exalted_spiky", },
@@ -1591,7 +1593,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     end
 
     if not nightmare_diff and entity.data and not entity.data.is_mechanical then
-        table.insert( list, "mod_exalted_respawn" )
+        table.insert( list, { "mod_exalted_respawn", tag = "respawn" } )
     end
 end
 
