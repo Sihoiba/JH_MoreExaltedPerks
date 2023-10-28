@@ -1584,7 +1584,7 @@ register_blueprint "mod_exalted_gatekeeper"
                     if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
                         if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("elevator_broken") or e:child("elevator_secure") ) then
                             if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
-                                e:attach("mod_exalted_gatekeeper_elevator_inactive")
+                                e:equip("mod_exalted_gatekeeper_elevator_inactive")
                             end
                             lock = true
                         end
