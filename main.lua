@@ -1343,7 +1343,10 @@ register_blueprint "mod_exalted_draining"
         on_die = [=[
             function( self, entity, killer, current, weapon, gibbed )
                 for c in ecs:children( entity ) do
-                    local drain_perk = c:child( "apply_drain" )
+                    local drain_perk = c:child( "apply_drain_1" )
+                    if not drain_perk then
+                        drain_perk = c:child( "apply_drain_4" )
+                    end
                     if drain_perk then
                         world:destroy( drain_perk )
                     end
