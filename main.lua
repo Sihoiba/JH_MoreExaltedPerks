@@ -1582,8 +1582,9 @@ register_blueprint "mod_exalted_gatekeeper"
                 local lock = false
                 for e in level:entities() do
                     if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("elevator_broken") or e:child("elevator_secure") ) then
+                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("elevator_broken") or e:child("elevator_secure") ) and not ( world:get_id( e ) == "elevator_01_branch" and world.data.level[ world.data.current ].branch_lock ) then
                             if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
+                                nova.log("Gatekeeper locking "..world:get_id( e ))
                                 e:equip("mod_exalted_gatekeeper_elevator_inactive")
                             end
                             lock = true
