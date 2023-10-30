@@ -646,6 +646,28 @@ register_blueprint "scream"
     },
 }
 
+register_blueprint "alerted"
+{
+    flags = { EF_NOPICKUP },
+    text = {
+        status = "Alerted",
+        sdesc  = "Has been alerted to the player",
+    },
+    callbacks = {
+        on_timer = [[
+            function ( self, first )
+                if first then return 100 end
+                local e = ecs:parent( self )
+                if e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) then
+                   e.target.entity = world:get_player()
+                   e.data.ai.state = "find"
+                end
+                return 0
+            end
+        ]]
+    }
+}
+
 register_blueprint "mod_exalted_screamer"
 {
     flags = { EF_NOPICKUP },
@@ -682,10 +704,11 @@ register_blueprint "mod_exalted_screamer"
                             world:destroy( w )
 
                             for e in level:beings() do
-                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) then
+                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) and not e:child( "alerted" ) then
                                     nova.log("One enemy is alerted and hunting: "..e:get_name())
                                     e.target.entity = world:get_player()
                                     e.data.ai.state = "find"
+                                    e:attach( "alerted" )
                                     break
                                 end
                             end
