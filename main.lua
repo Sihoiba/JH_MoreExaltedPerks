@@ -1455,7 +1455,7 @@ register_blueprint "mod_exalted_empowered_buff"
     callbacks = {
         on_action = [[
             function ( self, entity, time_passed, last )
-                -- nova.log("Empowered on action")
+                nova.log("Empowered on action "..entity:get_name().." "..self.get_name())
                 local sattr = self.attributes
                 if entity.target and entity.target.entity and entity.target.entity == world:get_player() and world:get_level():can_see_entity( entity, entity.target.entity, 8 ) then
                     nova.log("Empowered encountered player")
@@ -1554,12 +1554,25 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
         on_activate = [=[
             function( self, who, level )
                 if who == world:get_player() then
-                    ui:set_hint( self.text.failure, 2001, 0 )
-                    world:play_voice( "vo_refuse" )
-                    for b in level:beings() do
-                        if b:child("mod_exalted_gatekeeper") and not (b.minimap and b.minimap.always) then
-                            b:equip("tracker")
-                            b.minimap.always = true
+                    if level.level_info.cleared then
+                        for e in level:entities() do
+                            if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+                                local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
+                                if child then
+                                    world:mark_destroy( child )
+                                end
+                            end
+                        end
+                        world:flush_destroy()
+                        ui:set_hint( "Elevators unlocked", 2001, 0 )
+                    else
+                        ui:set_hint( self.text.failure, 2001, 0 )
+                        world:play_voice( "vo_refuse" )
+                        for b in level:beings() do
+                            if b:child("mod_exalted_gatekeeper") and not (b.minimap and b.minimap.always) then
+                                b:equip("tracker")
+                                b.minimap.always = true
+                            end
                         end
                     end
                 end
