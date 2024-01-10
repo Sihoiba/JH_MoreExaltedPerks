@@ -435,6 +435,24 @@ register_blueprint "mod_exalted_phasing"
                         end
                     end
                 end
+                -- Enemies phasing inside the frozen temple work around
+                if time_passed > 0 and level.attributes and level.attributes.temple_open == 0 and entity.target and entity.target.entity and entity.target.entity == player and not level:can_see_entity( entity, entity.target.entity, 8 ) then
+                    local sattr = self.attributes
+                    sattr.counter = sattr.counter + time_passed
+                    local entityPos = world:get_position( entity )
+                    if sattr.counter >= 300 then
+                        sattr.counter = 0
+                        local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
+                        if t then
+                            world:play_sound( "summon", entity )
+                            ui:spawn_fx( entity, "fx_teleport", entity )
+                            level:hard_place_entity( entity, t )
+                            nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                            level.level_info.enemies = enemy_count
+                            nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                        end
+                    end
+                end
                 -- nova.log("on action mod phasing count after: "..enemy_count)
             end
         ]],
