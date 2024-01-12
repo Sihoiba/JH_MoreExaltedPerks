@@ -64,7 +64,7 @@ function safe_phase_coord_spiral_out( self, start_coord, min_range, max_range )
     local abort = 0
     while next(spawn_coords) ~= nil do
         nova.log("abort count")
-        if abort > 256 then
+        if abort > 175 then
             return
         end
         local coord = table.remove( spawn_coords, math.random( #spawn_coords ) )
@@ -1066,7 +1066,18 @@ register_blueprint "mod_exalted_spiky"
                 end
             end
         ]],
-    }
+    },
+    health = {},
+    armor = {},
+    attributes = {
+        armor = {
+            2,
+            slash  = 2,
+            pierce = -1,
+            plasma = -1,
+        },
+        health   = 15,
+    },
 }
 
 register_blueprint "mod_exalted_adaptive_impact_buff"
@@ -1074,7 +1085,7 @@ register_blueprint "mod_exalted_adaptive_impact_buff"
     flags = { EF_NOPICKUP },
     text = {
         name = "ADAPT-IMPACT",
-        desc = "+75% impact resistance",
+        desc = "+75% impact resistance, -25% slash/pierce/plasma",
     },
     ui_buff = {
         color     = LIGHTBLUE,
@@ -1083,6 +1094,9 @@ register_blueprint "mod_exalted_adaptive_impact_buff"
     attributes = {
         resist = {
             impact   = 75,
+            slash    = -25,
+            pierce   = -25,
+            plasma   = -25,
         },
     },
     data = {
@@ -1091,9 +1105,6 @@ register_blueprint "mod_exalted_adaptive_impact_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
-                local types = {"slash.resist", "pierce.resist", "plasma.resist"}
-                local weak = table.remove( types, math.random( #types ) )
-                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1110,7 +1121,7 @@ register_blueprint "mod_exalted_adaptive_slash_buff"
     flags = { EF_NOPICKUP },
     text = {
         name = "ADAPT-SLASH",
-        desc = "+75% slash resistance",
+        desc = "+75% slash resistance, -25% impact/pierce/plasma",
     },
     ui_buff = {
         color     = LIGHTBLUE,
@@ -1118,7 +1129,10 @@ register_blueprint "mod_exalted_adaptive_slash_buff"
     },
     attributes = {
         resist = {
-            slash   = 75,
+            impact   = -25,
+            slash    = 75,
+            pierce   = -25,
+            plasma   = -25,
         },
     },
     data = {
@@ -1127,9 +1141,6 @@ register_blueprint "mod_exalted_adaptive_slash_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
-                local types = {"impact.resist", "pierce.resist", "plasma.resist"}
-                local weak = table.remove( types, math.random( #types ) )
-                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1146,7 +1157,7 @@ register_blueprint "mod_exalted_adaptive_pierce_buff"
     flags = { EF_NOPICKUP },
     text = {
         name = "ADAPT-PIERCE",
-        desc = "+75% pierce resistance",
+        desc = "+75% pierce resistance, -25% impact/slash/plasma",
     },
     ui_buff = {
         color     = LIGHTBLUE,
@@ -1154,7 +1165,10 @@ register_blueprint "mod_exalted_adaptive_pierce_buff"
     },
     attributes = {
         resist = {
+            impact   = -25,
+            slash    = -25,
             pierce   = 75,
+            plasma   = -25,
         },
     },
     data = {
@@ -1163,9 +1177,6 @@ register_blueprint "mod_exalted_adaptive_pierce_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
-                local types = {"slash.resist", "impact.resist", "plasma.resist"}
-                local weak = table.remove( types, math.random( #types ) )
-                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1182,7 +1193,7 @@ register_blueprint "mod_exalted_adaptive_plasma_buff"
     flags = { EF_NOPICKUP },
     text = {
         name = "ADAPT-PLASMA",
-        desc = "+75% plasma resistance",
+        desc = "+75% plasma resistance, -25% impact/slash/pierce",
     },
     ui_buff = {
         color     = LIGHTBLUE,
@@ -1190,6 +1201,9 @@ register_blueprint "mod_exalted_adaptive_plasma_buff"
     },
     attributes = {
         resist = {
+            impact   = -25,
+            slash    = -25,
+            pierce   = -25,
             plasma   = 75,
         },
     },
@@ -1199,9 +1213,6 @@ register_blueprint "mod_exalted_adaptive_plasma_buff"
     callbacks = {
         on_attach = [[
             function ( self, target )
-                local types = {"slash.resist", "pierce.resist", "impact.resist"}
-                local weak = table.remove( types, math.random( #types ) )
-                self.attributes[weak] = -25
                 for c in ecs:children( target ) do
                     if c~= self and c.data and c.data.adaptive_buff then
                         world:mark_destroy( c )
@@ -1288,7 +1299,7 @@ register_blueprint "apply_drain_1"
 
                     local rattr = resource.attributes
                     if rattr.value > 0 then
-                        rattr.value = math.max( rattr.value - 1, 0 )
+                        rattr.value = math.max( rattr.value - 2, 0 )
                     end
                 end
             end
@@ -1331,7 +1342,7 @@ register_blueprint "apply_drain_4"
 
                     local rattr = resource.attributes
                     if rattr.value > 0 then
-                        rattr.value = math.max( rattr.value - 4, 0 )
+                        rattr.value = math.max( rattr.value - 5, 0 )
                     end
                 end
             end
@@ -1704,7 +1715,7 @@ register_blueprint "mod_exalted_sniper_buff"
                 local light_range = level.level_info.light_range
                 if level:can_see_entity( actor, player, 8 ) then
                     local distance = math.min( level:distance( actor, player ), light_range )
-                    local factor = ( distance - 1 )/( light_range - 1 )
+                    local factor = math.max( ( distance - 2 )/( light_range -2 ), 0 )
                     nova.log("distance: "..distance..", lightrange: "..light_range..", factor: "..factor)
                     self.attributes.accuracy = math.ceil( 25 * factor )
                     self.attributes.damage_mult = 1 + ( 0.50 * factor )
@@ -1713,6 +1724,22 @@ register_blueprint "mod_exalted_sniper_buff"
                 end
             end
         ]=],
+        on_move = [[
+            function ( self, entity )
+                local level = world:get_level()
+                local player = world:get_player()
+                local light_range = level.level_info.light_range
+                if level:can_see_entity( entity, player, 8 ) then
+                    local distance = math.min( level:distance( entity, player ), light_range )
+                    local factor = math.max( ( distance - 2 )/( light_range -2 ), 0 )
+                    nova.log("distance: "..distance..", lightrange: "..light_range..", factor: "..factor)
+                    self.attributes.accuracy = math.ceil( 25 * factor )
+                    self.attributes.damage_mult = 1 + ( 0.50 * factor )
+                    self.attributes.evasion = math.ceil( 50 * factor )
+                    self.attributes.percentage = math.ceil( 100 * factor )
+                end
+            end
+        ]],
     },
 }
 
@@ -1766,11 +1793,11 @@ function more_exalted_test.on_entity( entity )
         -- make_exalted( entity, 3, exalted_traits )
     -- end
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, {"mod_exalted_sniper"} )
+        make_exalted( entity, 1, {"mod_exalted_sniper", "mod_exalted_adaptive"} )
     end
 end
 
--- world.register_on_entity( more_exalted_test.on_entity )
+--world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
 
