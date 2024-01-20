@@ -1607,7 +1607,7 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
                 end
                 return 1
             end
-        ]=],		
+        ]=],
         on_attach = [=[
             function( self, parent )
                 parent.flags.data =  { EF_NOSIGHT, EF_NOMOVE, EF_NOFLY, EF_NOSHOOT, EF_BUMPACTION, EF_ACTION }
@@ -1664,6 +1664,27 @@ register_blueprint "mod_exalted_gatekeeper"
                     entity:attach( "mod_exalted_gatekeeper" )
                     entity.attributes.health = math.floor(entity.attributes.health * 1.25)
                     entity.health.current = entity.attributes.health
+                end
+            end
+        ]=],
+        on_action = [=[
+            function ( self, entity, time_passed, last )
+                if entity:child( "disabled" ) or entity:child( "friendly" ) then
+                    local unlocked = false
+                    local level = world:get_level()
+                    for e in level:entities() do
+                        if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+                            local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
+                            if child then
+                                world:mark_destroy( child )
+                                unlocked = true
+                            end
+                        end
+                    end
+                    world:flush_destroy()
+                    if unlocked then
+                        ui:set_hint( "Elevators unlocked", 2001, 0 )
+                    end
                 end
             end
         ]=],
