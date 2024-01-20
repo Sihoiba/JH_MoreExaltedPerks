@@ -722,7 +722,7 @@ register_blueprint "mod_exalted_screamer"
                             world:destroy( w )
 
                             for e in level:beings() do
-                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) and not e:child( "alerted" ) then
+                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) and not e:child( "alerted" ) and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
                                     nova.log("One enemy is alerted and hunting: "..e:get_name())
                                     e.target.entity = world:get_player()
                                     e.data.ai.state = "find"
@@ -839,9 +839,9 @@ register_blueprint "buff_irradiated"
         on_callback = [[
             function ( self )
                 local time_left = self.lifetime.time_left
-                local level = math.min( math.floor( time_left / 200 ) + 1, 20 )
+                local level = math.min( math.floor( time_left / 200 ) + 1, 10 )
                 self.attributes.damage_mod = 1.0 + (0.05 * level)
-                self.attributes.percentage = level * 5
+                self.attributes.percentage = level * 10
             end
         ]],
         on_die = [[
@@ -1583,7 +1583,7 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
         on_activate = [=[
             function( self, who, level )
                 if who == world:get_player() then
-                    if level.level_info.cleared then
+                    if level.level_info.cleared and level.level_info.enemies == 0 then
                         for e in level:entities() do
                             if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
                                 local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
@@ -1607,7 +1607,7 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
                 end
                 return 1
             end
-        ]=],
+        ]=],		
         on_attach = [=[
             function( self, parent )
                 parent.flags.data =  { EF_NOSIGHT, EF_NOMOVE, EF_NOFLY, EF_NOSHOOT, EF_BUMPACTION, EF_ACTION }
@@ -1816,11 +1816,11 @@ function make_more_exalted_list( entity, list, nightmare_diff )
     table.insert( list, "mod_exalted_pressuring" )
     table.insert( list, { "mod_exalted_vampiric", min = 6, tag = "health" } )
 
-    if not entity:child("terminal_bot_rexio") then
+    if not entity:child("terminal_bot_rexio") and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
         table.insert( list, "mod_exalted_radioactive" )
     end
 
-    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") then
+    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
         table.insert( list, "mod_exalted_gatekeeper" )
     end
 
@@ -1848,7 +1848,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         table.insert( list, "mod_exalted_spiky" )
     end
 
-    if entity.data and entity.data.is_mechanical then
+    if entity.data and entity.data.is_mechanical and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
         table.insert( list, "mod_exalted_polluting" )
         table.insert( list, { "mod_exalted_screamer", tag = "health" } )
     end
