@@ -1841,7 +1841,7 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         table.insert( list, "mod_exalted_radioactive" )
     end
 
-    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
+    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") then
         table.insert( list, "mod_exalted_gatekeeper" )
     end
 
