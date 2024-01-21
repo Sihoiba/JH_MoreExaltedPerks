@@ -1621,6 +1621,30 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
     },
 }
 
+register_blueprint "level_event_gatekeeper_on_clear"
+{
+    callbacks = {
+        on_cleared = [[
+            function ( self, level )
+                local unlocked = false
+                for e in level:entities() do
+                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
+                        local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
+                        if child then
+                            world:mark_destroy( child )
+                            unlocked = true
+                        end
+                    end
+                end
+                world:flush_destroy()
+                if unlocked then
+                    ui:set_hint( "Elevators unlocked", 2001, 0 )
+                end
+            end
+        ]],
+    }
+}
+
 register_blueprint "mod_exalted_gatekeeper"
 {
     flags = { EF_NOPICKUP },
@@ -1664,6 +1688,7 @@ register_blueprint "mod_exalted_gatekeeper"
                     entity:attach( "mod_exalted_gatekeeper" )
                     entity.attributes.health = math.floor(entity.attributes.health * 1.25)
                     entity.health.current = entity.attributes.health
+                    world:attach( level, world:create_entity( "level_event_gatekeeper_on_clear" ) )
                 end
             end
         ]=],
