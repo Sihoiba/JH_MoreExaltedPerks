@@ -408,7 +408,7 @@ register_blueprint "mod_exalted_phasing"
         ]],
         on_attach = [[
             function ( self, target )
-                local random_start = {0, 100, 200, 300}
+                local random_start = {0, 100, 200, 250}
                 self.attributes.counter = table.remove( random_start, math.random( #random_start ) )
             end
         ]],
@@ -422,7 +422,7 @@ register_blueprint "mod_exalted_phasing"
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
-                    if sattr.counter >= 300 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
+                    if sattr.counter >= 250 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
@@ -440,7 +440,7 @@ register_blueprint "mod_exalted_phasing"
                     local sattr = self.attributes
                     sattr.counter = sattr.counter + time_passed
                     local entityPos = world:get_position( entity )
-                    if sattr.counter >= 300 then
+                    if sattr.counter >= 250 then
                         sattr.counter = 0
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
@@ -468,7 +468,7 @@ register_blueprint "mod_exalted_phasing"
                 if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
                     local entityPos = world:get_position( entity )
-                    if sattr.counter >= 300 then
+                    if sattr.counter >= 250 then
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
                             world:play_sound( "summon", entity )
@@ -676,9 +676,9 @@ register_blueprint "alerted"
             function ( self, first )
                 if first then return 100 end
                 local e = ecs:parent( self )
-                if e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) then
+                if (e.data.ai.state ~= "find" or e.data.ai.state ~= "hunt") and e.target.entity ~= world:get_player() and not e:child( "friendly" ) then
                    e.target.entity = world:get_player()
-                   e.data.ai.state = "find"
+                   e.data.ai.state = "hunt"
                 end
                 return 0
             end
@@ -1493,7 +1493,12 @@ register_blueprint "mod_exalted_empowered_buff"
                 if sattr.encountered then
                     if time_passed > 0 and sattr.percentage < 100 then
                         sattr.counter = sattr.counter + time_passed
-                        if sattr.counter > 500 then
+                        if sattr.percentage == 0 then
+                            sattr.damage_mult = sattr.damage_mult + 0.1
+                            sattr.move_time = sattr.move_time - 0.05
+                            sattr.percentage = sattr.percentage + 10
+                        end
+                        if sattr.counter > 300 then
                             sattr.counter = 0
                             sattr.damage_mult = sattr.damage_mult + 0.1
                             sattr.move_time = sattr.move_time - 0.05
@@ -1653,10 +1658,10 @@ register_blueprint "mod_exalted_gatekeeper"
         sdesc  = "Meaner, tougher and locks main and branch elevators until it has been slain",
     },
     attributes = {
-        damage_mult = 1.25,
+        damage_mult = 1.3,
         splash_mod = 0.75,
         armor = {
-            2,
+            3,
         },
         resist = {
             acid   = 25,
