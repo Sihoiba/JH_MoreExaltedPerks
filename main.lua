@@ -1657,6 +1657,7 @@ register_blueprint "mod_exalted_gatekeeper"
         status = "GATEKEEPER",
         sdesc  = "Meaner, tougher and locks main and branch elevators until it has been slain",
     },
+    armor = {},
     attributes = {
         damage_mult = 1.3,
         splash_mod = 0.75,
