@@ -408,7 +408,7 @@ register_blueprint "mod_exalted_phasing"
         ]],
         on_attach = [[
             function ( self, target )
-                local random_start = {0, 100, 200, 250}
+                local random_start = {100, 200, 250}
                 self.attributes.counter = table.remove( random_start, math.random( #random_start ) )
             end
         ]],
@@ -468,7 +468,7 @@ register_blueprint "mod_exalted_phasing"
                 if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
                     local entityPos = world:get_position( entity )
-                    if sattr.counter >= 250 then
+                    if sattr.counter >= 100 then
                         local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
                         if t then
                             world:play_sound( "summon", entity )
@@ -551,6 +551,10 @@ register_blueprint "mod_exalted_scorching"
     callbacks = {
         on_activate = [[
             function( self, entity )
+                local orig_ignite_resist = entity:attribute( "resist", "ignite" )
+                if orig_ignite_resist and orig_ignite_resist < 0 then
+                    self.attributes["ignite.resist"] = self.attributes["ignite.resist"] + (-1 * orig_ignite_resist)
+                end
                 entity:attach( "mod_exalted_scorching" )
             end
         ]],
@@ -1071,12 +1075,8 @@ register_blueprint "mod_exalted_spiky"
     armor = {},
     attributes = {
         armor = {
-            2,
-            slash  = 2,
-            pierce = -1,
-            plasma = -1,
+            2
         },
-        health   = 15,
     },
 }
 
