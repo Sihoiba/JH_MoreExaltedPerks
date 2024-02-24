@@ -1620,7 +1620,9 @@ register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
         ]=],
         on_detach = [=[
             function( self, parent )
-                parent.flags.data =  {}
+                if not parent:child("elevator_inactive_completionist") then
+                    parent.flags.data =  {}
+                end
             end
         ]=],
     },
@@ -1845,11 +1847,11 @@ function more_exalted_test.on_entity( entity )
         -- make_exalted( entity, 3, exalted_traits )
     -- end
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, {"mod_exalted_sniper", "mod_exalted_adaptive"} )
+        make_exalted( entity, 1, {"mod_exalted_gatekeeper", "exalted_kw_gatekeeper"} )
     end
 end
 
---world.register_on_entity( more_exalted_test.on_entity )
+-- world.register_on_entity( more_exalted_test.on_entity )
 
 function make_more_exalted_list( entity, list, nightmare_diff )
 
