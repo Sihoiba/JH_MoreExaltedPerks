@@ -6,78 +6,6 @@ function insertFlags( flag )
     end
 end
 
-function safe_phase_coord_spiral_out( self, start_coord, min_range, max_range )
-    local max_range = max_range or 6
-    local min_range = min_range or 1
-
-    local floor_id = self:get_nid( "floor" )
-    local function can_spawn( p, c )
-        if self:raw_get_cell( c ) ~= floor_id then return false end
-        if self:get_cell_flags( c )[ EF_NOSPAWN ] then return false end
-        if self:get_cell_flags( c )[ EF_NOMOVE ] then return false end
-        local being = world:get_level():get_being( c )
-        if being then return false end
-        for e in world:get_level():entities( c ) do
-            if e.flags and e.flags.data and e.flags.data [ EF_NOMOVE ] then
-                return false
-            end
-            if e.data and e.data.is_player then
-                return false
-            end
-        end
-        if not p then return true end
-
-        local pc = p - c
-        if pc.x < 0 then pc.x = -pc.x end
-        if pc.y < 0 then pc.y = -pc.y end
-        return pc.x <= max_range or pc.y <= max_range
-    end
-
-    local function spiral_get_values(min_dist, max_dist)
-        local cx = 0
-        local cy = 0
-        local d = 1
-        local m = min_dist
-        local spiral_coords = {}
-        while cx <= max_dist and cy <= max_dist do
-            nova.log("Spiral get values cx: "..cx..", cy: "..cy..", max_dist: "..max_dist)
-            while (2 * cx * d) < m do
-                table.insert(spiral_coords, {x=cx, y=cy})
-                cx = cx + d
-            end
-            while (2 * cy * d) < m do
-                table.insert(spiral_coords, {x=cx, y=cy})
-                cy = cy + d
-            end
-            d = -1 * d
-            m = m + 1
-        end
-        return spiral_coords
-    end
-
-    local p = start_coord
-    if can_spawn( p, p ) then
-        return p
-    end
-
-    local spawn_coords = spiral_get_values(min_range, max_range)
-    local abort = 0
-    while next(spawn_coords) ~= nil do
-        nova.log("abort count")
-        if abort > 175 then
-            return
-        end
-        local coord = table.remove( spawn_coords, math.random( #spawn_coords ) )
-        p.x = start_coord.x + coord.x
-        p.y = start_coord.y + coord.y
-        nova.log("Checking "..tostring(p.x)..","..tostring(p.y))
-        if can_spawn( start_coord, p ) then
-            return p
-        end
-        abort = abort + 1
-    end
-end
-
 register_blueprint "buff_dazzled_1"
 {
     flags = { EF_NOPICKUP },
@@ -424,14 +352,14 @@ register_blueprint "mod_exalted_phasing"
                     local entityPos = world:get_position( entity )
                     if sattr.counter >= 250 and ( last < COMMAND_MOVE or last > COMMAND_MOVE_F ) and level:distance( entity, player ) > 2 then
                         sattr.counter = 0
-                        local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
+                        local t = gtk.random_near_coord( entityPos, 3 )
                         if t then
                             world:play_sound( "summon", entity )
                             ui:spawn_fx( entity, "fx_teleport", entity )
                             level:hard_place_entity( entity, t )
-                            nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                            -- nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)
                             level.level_info.enemies = enemy_count
-                            nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                            -- nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
                         end
                     end
                 end
@@ -442,14 +370,14 @@ register_blueprint "mod_exalted_phasing"
                     local entityPos = world:get_position( entity )
                     if sattr.counter >= 250 then
                         sattr.counter = 0
-                        local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
+                        local t = gtk.random_near_coord( entityPos, 3 )
                         if t then
                             world:play_sound( "summon", entity )
                             ui:spawn_fx( entity, "fx_teleport", entity )
                             level:hard_place_entity( entity, t )
-                            nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                            -- nova.log("mod phasing level.level_info.enemies: "..level.level_info.enemies)
                             level.level_info.enemies = enemy_count
-                            nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
+                            -- nova.log("adjusted mod phasing level.level_info.enemies: "..level.level_info.enemies)
                         end
                     end
                 end
@@ -459,17 +387,18 @@ register_blueprint "mod_exalted_phasing"
         on_receive_damage = [[
             function ( self, source, weapon, amount )
                 if not self then return end
+
                 local entity = self:parent()
                 local level = world:get_level()
                 local enemy_count = level.level_info.enemies * 1
                 local player = world:get_player()
                 local eh = entity.health
-                -- nova.log("on damage mod phasing count before: "..enemy_count)
-                if eh.current > 0 and source == player and level:can_see_entity( entity, player, 8 ) then
+
+                if eh.current > 0 and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
                     local entityPos = world:get_position( entity )
                     if sattr.counter >= 100 then
-                        local t = safe_phase_coord_spiral_out( level, entityPos, 2, 3 )
+                        local t = gtk.random_near_coord( entityPos, 3 )
                         if t then
                             world:play_sound( "summon", entity )
                             ui:spawn_fx( entity, "fx_teleport", entity )
@@ -479,105 +408,6 @@ register_blueprint "mod_exalted_phasing"
                     end
                 end
                 -- nova.log("on damage mod phasing count after: "..enemy_count)
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_polluting"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        status = "POLLUTING",
-        sdesc  = "spreads acid around itself",
-    },
-    attributes = {
-        counter = 0,
-        resist = {
-            acid   = 100,
-        },
-    },
-    callbacks = {
-        on_activate = [[
-            function( self, entity )
-                nova.log("Attaching polluting")
-                entity:attach( "mod_exalted_polluting" )
-            end
-        ]],
-        on_action = [[
-            function ( self, entity, time_passed, last )
-                -- nova.log("Pollution checking on action")
-                local level = world:get_level()
-                local player = world:get_player()
-                if time_passed > 0 then
-                    local sattr = self.attributes
-                    sattr.counter = sattr.counter + time_passed
-                    local entityPos = world:get_position( entity )
-                    if sattr.counter > 150 then
-                        nova.log("Pollution spreading acid")
-                        sattr.counter = 0
-                        local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
-                        if t then
-                            ui:spawn_fx( entity, "ps_broken_sparks", entity )
-                            local pool = level:get_entity( t, "acid_pool" )
-                            if not pool then
-                                pool = level:place_entity( "acid_pool", t )
-                            end
-                            pool.attributes.acid_amount = 10
-                            pool.lifetime.time_left = math.max( pool.lifetime.time_left, 1000 + math.random(100) )
-                        end
-                    end
-                end
-                -- nova.log("Pollution done spreading acid")
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_scorching"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        status = "SCORCHING",
-        sdesc  = "spreads fire around itself",
-    },
-    attributes = {
-        counter = 0,
-        resist = {
-            ignite = 100,
-            cold   = -100
-        },
-    },
-    callbacks = {
-        on_activate = [[
-            function( self, entity )
-                local orig_ignite_resist = entity:attribute( "resist", "ignite" )
-                if orig_ignite_resist and orig_ignite_resist < 0 then
-                    self.attributes["ignite.resist"] = self.attributes["ignite.resist"] + (-1 * orig_ignite_resist)
-                end
-                entity:attach( "mod_exalted_scorching" )
-            end
-        ]],
-        on_action = [[
-            function ( self, entity, time_passed, last )
-                -- nova.log("Scorching checking on action")
-                local level = world:get_level()
-                local player = world:get_player()
-                if time_passed > 0 then
-                    local sattr = self.attributes
-                    sattr.counter = sattr.counter + time_passed
-                    local entityPos = world:get_position( entity )
-                    if sattr.counter > 150 then
-                        nova.log("Scorching spreading fire")
-                        sattr.counter = 0
-                        local t = safe_phase_coord_spiral_out( level, entityPos, 1, 2 )
-                        if t then
-                            ui:spawn_fx( entity, "scorching_smoke", entity )
-                            gtk.place_flames( t, 10, 1000 + math.random(100) )
-                        end
-                    end
-                end
-                -- nova.log("Scorching done making fire")
             end
         ]],
     },
@@ -1080,190 +910,6 @@ register_blueprint "mod_exalted_spiky"
     },
 }
 
-register_blueprint "mod_exalted_adaptive_impact_buff"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        name = "ADAPT-IMPACT",
-        desc = "+75% impact resistance, -25% slash/pierce/plasma",
-    },
-    ui_buff = {
-        color     = LIGHTBLUE,
-        priority  = 100,
-    },
-    attributes = {
-        resist = {
-            impact   = 75,
-            slash    = -25,
-            pierce   = -25,
-            plasma   = -25,
-        },
-    },
-    data = {
-        adaptive_buff = true,
-    },
-    callbacks = {
-        on_attach = [[
-            function ( self, target )
-                for c in ecs:children( target ) do
-                    if c~= self and c.data and c.data.adaptive_buff then
-                        world:mark_destroy( c )
-                    end
-                end
-                world:flush_destroy()
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_adaptive_slash_buff"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        name = "ADAPT-SLASH",
-        desc = "+75% slash resistance, -25% impact/pierce/plasma",
-    },
-    ui_buff = {
-        color     = LIGHTBLUE,
-        priority  = 100,
-    },
-    attributes = {
-        resist = {
-            impact   = -25,
-            slash    = 75,
-            pierce   = -25,
-            plasma   = -25,
-        },
-    },
-    data = {
-        adaptive_buff = true,
-    },
-    callbacks = {
-        on_attach = [[
-            function ( self, target )
-                for c in ecs:children( target ) do
-                    if c~= self and c.data and c.data.adaptive_buff then
-                        world:mark_destroy( c )
-                    end
-                end
-                world:flush_destroy()
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_adaptive_pierce_buff"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        name = "ADAPT-PIERCE",
-        desc = "+75% pierce resistance, -25% impact/slash/plasma",
-    },
-    ui_buff = {
-        color     = LIGHTBLUE,
-        priority  = 100,
-    },
-    attributes = {
-        resist = {
-            impact   = -25,
-            slash    = -25,
-            pierce   = 75,
-            plasma   = -25,
-        },
-    },
-    data = {
-        adaptive_buff = true,
-    },
-    callbacks = {
-        on_attach = [[
-            function ( self, target )
-                for c in ecs:children( target ) do
-                    if c~= self and c.data and c.data.adaptive_buff then
-                        world:mark_destroy( c )
-                    end
-                end
-                world:flush_destroy()
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_adaptive_plasma_buff"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        name = "ADAPT-PLASMA",
-        desc = "+75% plasma resistance, -25% impact/slash/pierce",
-    },
-    ui_buff = {
-        color     = LIGHTBLUE,
-        priority  = 100,
-    },
-    attributes = {
-        resist = {
-            impact   = -25,
-            slash    = -25,
-            pierce   = -25,
-            plasma   = 75,
-        },
-    },
-    data = {
-        adaptive_buff = true,
-    },
-    callbacks = {
-        on_attach = [[
-            function ( self, target )
-                for c in ecs:children( target ) do
-                    if c~= self and c.data and c.data.adaptive_buff then
-                        world:mark_destroy( c )
-                    end
-                end
-                world:flush_destroy()
-            end
-        ]],
-    },
-}
-
-register_blueprint "mod_exalted_adaptive"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        status = "ADAPTIVE",
-        sdesc  = "gains damage resistance to last weapon damage type hit by. Plasma resist does not show on stats screen.",
-    },
-    callbacks = {
-        on_activate = [=[
-            function( self, entity )
-                entity:attach( "mod_exalted_adaptive" )
-            end
-        ]=],
-        on_receive_damage = [[
-            function ( self, entity, source, weapon, amount )
-                if weapon and weapon.weapon then
-                    nova.log("adapting")
-                    if weapon.weapon.damage_type == world:hash("impact") then
-                        entity:attach("mod_exalted_adaptive_impact_buff")
-                    elseif weapon.weapon.damage_type == world:hash("pierce") then
-                        entity:attach("mod_exalted_adaptive_pierce_buff")
-                    elseif weapon.weapon.damage_type == world:hash("plasma") then
-                        entity:attach("mod_exalted_adaptive_plasma_buff")
-                    elseif weapon.weapon.damage_type == world:hash("slash") then
-                        entity:attach("mod_exalted_adaptive_slash_buff")
-                    end
-                else
-                    nova.log("non weapon damage adaptation cleared")
-                    for c in ecs:children( entity ) do
-                        if c.data and c.data.adaptive_buff then
-                            world:mark_destroy( c )
-                        end
-                    end
-                    world:flush_destroy()
-                end
-            end
-        ]],
-    }
-}
-
 register_blueprint "apply_drain_1"
 {
     text = {
@@ -1578,171 +1224,6 @@ register_blueprint "mod_exalted_empowered"
     },
 }
 
-register_blueprint "mod_exalted_gatekeeper_elevator_inactive"
-{
-    text = {
-        short = "inactive",
-        failure = "It won't open until an exalted gatekeeper has been slain!",
-    },
-    callbacks = {
-        on_activate = [=[
-            function( self, who, level )
-                if who == world:get_player() then
-                    if level.level_info.cleared and level.level_info.enemies == 0 then
-                        for e in level:entities() do
-                            if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                                local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
-                                if child then
-                                    world:mark_destroy( child )
-                                end
-                            end
-                        end
-                        world:flush_destroy()
-                        ui:set_hint( "Elevators unlocked", 2001, 0 )
-                    else
-                        ui:set_hint( self.text.failure, 2001, 0 )
-                        world:play_voice( "vo_refuse" )
-                        for b in level:beings() do
-                            if b:child("mod_exalted_gatekeeper") and not (b.minimap and b.minimap.always) then
-                                b:equip("tracker")
-                                b.minimap.always = true
-                            end
-                        end
-                    end
-                end
-                return 1
-            end
-        ]=],
-        on_attach = [=[
-            function( self, parent )
-                parent.flags.data =  { EF_NOSIGHT, EF_NOMOVE, EF_NOFLY, EF_NOSHOOT, EF_BUMPACTION, EF_ACTION }
-            end
-        ]=],
-        on_detach = [=[
-            function( self, parent )
-                if not parent:child("elevator_inactive_completionist") then
-                    parent.flags.data =  {}
-                end
-            end
-        ]=],
-    },
-}
-
-register_blueprint "level_event_gatekeeper_on_clear"
-{
-    callbacks = {
-        on_cleared = [[
-            function ( self, level )
-                local unlocked = false
-                for e in level:entities() do
-                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                        local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
-                        if child then
-                            world:mark_destroy( child )
-                            unlocked = true
-                        end
-                    end
-                end
-                world:flush_destroy()
-                if unlocked then
-                    ui:set_hint( "Elevators unlocked", 2001, 0 )
-                end
-            end
-        ]],
-    }
-}
-
-register_blueprint "mod_exalted_gatekeeper"
-{
-    flags = { EF_NOPICKUP },
-    text = {
-        status = "GATEKEEPER",
-        sdesc  = "Meaner, tougher and locks main and branch elevators until it has been slain",
-    },
-    armor = {},
-    attributes = {
-        damage_mult = 1.3,
-        splash_mod = 0.75,
-        armor = {
-            3,
-        },
-        resist = {
-            acid   = 25,
-            toxin  = 25,
-            ignite = 25,
-            bleed  = 25,
-            emp    = 25,
-            cold   = 25,
-        },
-    },
-    callbacks = {
-        on_activate = [=[
-            function( self, entity )
-                local level = world:get_level()
-                local lock = false
-                for e in level:entities() do
-                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                        if not ( e:child("elevator_inactive") or e:child("elevator_locked") or e:child("elevator_01_off") or e:child("elevator_broken") or e:child("elevator_secure") ) and not ( world:get_id( e ) == "elevator_01_branch" and world.data.level[ world.data.current ].branch_lock ) then
-                            if not e:child("mod_exalted_gatekeeper_elevator_inactive") then
-                                nova.log("Gatekeeper locking "..world:get_id( e ))
-                                e:equip("mod_exalted_gatekeeper_elevator_inactive")
-                            end
-                            lock = true
-                        end
-                    end
-                end
-                if lock then
-                    level.data.gatekeeper_spawned = true
-                    entity:attach( "mod_exalted_gatekeeper" )
-                    entity.attributes.health = math.floor(entity.attributes.health * 1.25)
-                    entity.health.current = entity.attributes.health
-                    world:attach( level, world:create_entity( "level_event_gatekeeper_on_clear" ) )
-                end
-            end
-        ]=],
-        on_action = [=[
-            function ( self, entity, time_passed, last )
-                if entity:child( "disabled" ) or entity:child( "friendly" ) then
-                    local unlocked = false
-                    local level = world:get_level()
-                    for e in level:entities() do
-                        if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                            local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
-                            if child then
-                                world:mark_destroy( child )
-                                unlocked = true
-                            end
-                        end
-                    end
-                    world:flush_destroy()
-                    if unlocked then
-                        ui:set_hint( "Elevators unlocked", 2001, 0 )
-                    end
-                end
-            end
-        ]=],
-        on_die = [[
-            function ( self )
-                local unlocked = false
-                local level = world:get_level()
-                for e in level:entities() do
-                    if world:get_id( e ) == "elevator_01" or world:get_id( e ) == "elevator_01_branch" then
-                        local child = e:child( "mod_exalted_gatekeeper_elevator_inactive" )
-                        if child then
-                            world:mark_destroy( child )
-                            unlocked = true
-                        end
-                    end
-                end
-                world:flush_destroy()
-                if unlocked then
-                    ui:set_hint( "Elevators unlocked", 2001, 0 )
-                end
-            end
-        ]],
-    },
-}
-
 register_blueprint "mod_exalted_sniper_buff"
 {
     flags = { EF_NOPICKUP },
@@ -1818,19 +1299,15 @@ more_exalted_test = {}
 
 function more_exalted_test.on_entity( entity )
     local exalted_traits = {
-        { "mod_exalted_adaptive", },
         { "mod_exalted_blast_shield", },
         { "mod_exalted_blinding", },
         { "mod_exalted_crit_defence", },
         { "mod_exalted_draining", },
         { "mod_exalted_empowered", },
-        { "mod_exalted_gatekeeper", },
         { "mod_exalted_phasing", },
-        { "mod_exalted_polluting", },
         { "mod_exalted_pressuring", },
         { "mod_exalted_radioactive", },
         { "mod_exalted_respawn", },
-        { "mod_exalted_scorching", },
         { "mod_exalted_screamer", },
         { "mod_exalted_sniper" },
         { "mod_exalted_soldier_bayonet", },
@@ -1840,14 +1317,8 @@ function more_exalted_test.on_entity( entity )
         { "mod_exalted_vampiric", },
     }
     local level = world:get_level()
-    -- if level.data and level.data.gatekeeper_spawned then
-        -- nova.log("already gatekeeper present")
-    -- end
-    -- if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  and not level.data.gatekeeper_spawned then
-        -- make_exalted( entity, 3, exalted_traits )
-    -- end
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, {"mod_exalted_gatekeeper", "exalted_kw_gatekeeper"} )
+        make_exalted( entity, 1, { "mod_exalted_phasing" } )
     end
 end
 
@@ -1857,11 +1328,6 @@ function make_more_exalted_list( entity, list, nightmare_diff )
 
     local level = world:get_level()
 
-    if level.data and level.data.gatekeeper_spawned then
-        nova.log("already gatekeeper present")
-    end
-
-    table.insert( list, { "mod_exalted_adaptive", min = 4, } )
     table.insert( list, "mod_exalted_blast_shield" )
     table.insert( list, "mod_exalted_blinding" )
     table.insert( list, "mod_exalted_crit_defence" )
@@ -1872,10 +1338,6 @@ function make_more_exalted_list( entity, list, nightmare_diff )
 
     if not entity:child("terminal_bot_rexio") and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
         table.insert( list, "mod_exalted_radioactive" )
-    end
-
-    if level.data and not level.data.gatekeeper_spawned and not entity:child("terminal_bot_rexio") then
-        table.insert( list, "mod_exalted_gatekeeper" )
     end
 
     if entity.data and entity.data.ai and entity.data.ai.idle ~= "turret_idle" then
@@ -1893,17 +1355,11 @@ function make_more_exalted_list( entity, list, nightmare_diff )
         table.insert( list, "mod_exalted_soldier_bayonet" )
     end
 
-    if entity.data and entity.data.ai and entity.data.ai.group == "demon" and not entity:child("terminal_bot_rexio") then
-        table.insert( list, "mod_exalted_polluting" )
-        table.insert( list, "mod_exalted_scorching" )
-    end
-
     if entity.data and entity.data.ai and entity.data.ai.group == "demon" then
         table.insert( list, "mod_exalted_spiky" )
     end
 
     if entity.data and entity.data.is_mechanical and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
-        table.insert( list, "mod_exalted_polluting" )
         table.insert( list, { "mod_exalted_screamer", tag = "health" } )
     end
 
