@@ -882,7 +882,7 @@ register_blueprint "mod_exalted_spiky"
     flags = { EF_NOPICKUP },
     text = {
         status = "SPIKY",
-        sdesc  = "deals damage when hit in melee",
+        sdesc  = "deals damage when hit in melee, {!2} points of innate armor",
     },
     callbacks = {
         on_activate = [=[
@@ -901,11 +901,9 @@ register_blueprint "mod_exalted_spiky"
             end
         ]],
     },
-    health = {},
-    armor = {},
     attributes = {
         armor = {
-            2
+            2,
         },
     },
 }
