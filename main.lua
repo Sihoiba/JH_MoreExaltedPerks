@@ -396,18 +396,9 @@ register_blueprint "mod_exalted_phasing"
 
                 if eh.current > 0 and level:can_see_entity( entity, player, 8 ) then
                     local sattr = self.attributes
-                    local entityPos = world:get_position( entity )
-                    if sattr.counter >= 100 then
-                        local t = gtk.random_near_coord( entityPos, 3 )
-                        if t then
-                            world:play_sound( "summon", entity )
-                            ui:spawn_fx( entity, "fx_teleport", entity )
-                            level:hard_place_entity( entity, t )
-                            level.level_info.enemies = enemy_count
-                        end
-                    end
+                    sattr.counter = sattr.counter + 50
+                    -- nova.log("hit so phasing count now"..tostring(sattr.counter))
                 end
-                -- nova.log("on damage mod phasing count after: "..enemy_count)
             end
         ]],
     },
