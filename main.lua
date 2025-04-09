@@ -95,9 +95,9 @@ register_blueprint "apply_dazzled"
             function ( unused, weapon, who, amount, source )
                 if who and who.data and who.data.is_player then
                     if weapon.weapon and weapon.weapon.type == world:hash("melee") then
-                        world:add_buff( who, "buff_dazzled_3", 500 )
+                        world:add_buff( who, "buff_dazzled_3", 500, true )
                     else
-                        world:add_buff( who, "buff_dazzled_1", 200 )
+                        world:add_buff( who, "buff_dazzled_1", 200, true )
                     end
                 end
             end
@@ -150,6 +150,9 @@ register_blueprint "mod_exalted_blinding"
                 end
             end
         ]=]
+    },
+    attributes = {
+        opt_distance = -1,
     },
 }
 
@@ -1243,7 +1246,7 @@ register_blueprint "mod_exalted_sniper_buff"
                     nova.log("distance: "..distance..", lightrange: "..light_range..", factor: "..factor)
                     self.attributes.accuracy = math.ceil( 25 * factor )
                     self.attributes.damage_mult = 1 + ( 0.50 * factor )
-                    self.attributes.evasion = math.ceil( 50 * factor )
+                    self.attributes.evasion = math.ceil( 25 * factor )
                     self.attributes.percentage = math.ceil( 100 * factor )
                 end
             end
@@ -1259,7 +1262,7 @@ register_blueprint "mod_exalted_sniper_buff"
                     nova.log("distance: "..distance..", lightrange: "..light_range..", factor: "..factor)
                     self.attributes.accuracy = math.ceil( 25 * factor )
                     self.attributes.damage_mult = 1 + ( 0.50 * factor )
-                    self.attributes.evasion = math.ceil( 50 * factor )
+                    self.attributes.evasion = math.ceil( 25 * factor )
                     self.attributes.percentage = math.ceil( 100 * factor )
                 end
             end
@@ -1307,7 +1310,7 @@ function more_exalted_test.on_entity( entity )
     }
     local level = world:get_level()
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, { "mod_exalted_phasing" } )
+        make_exalted( entity, 1, { "mod_exalted_sniper", "mod_exalted_blinding" } )
     end
 end
 
