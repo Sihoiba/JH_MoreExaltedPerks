@@ -91,13 +91,13 @@ register_blueprint "buff_dazzled_3"
 register_blueprint "apply_dazzled"
 {
     callbacks = {
-        on_damage = [[
-            function ( unused, weapon, who, amount, source )
+        on_apply_damage = [[
+            function ( self, source, who, amount, weapon )
                 if who and who.data and who.data.is_player then
                     if weapon.weapon and weapon.weapon.type == world:hash("melee") then
                         world:add_buff( who, "buff_dazzled_3", 500, true )
                     else
-                        world:add_buff( who, "buff_dazzled_1", 200, true )
+                        world:add_buff( who, "buff_dazzled_1", 250, true )
                     end
                 end
             end
@@ -811,13 +811,15 @@ register_blueprint "apply_vampiric"
         desc = "heals on damage",
     },
     callbacks = {
-        on_damage = [[
-            function ( unused, weapon, who, amount, source )
-                if who and who.data then
-                    local target_max = who.attributes.health
-                    local proportion = math.min( 0.2, amount/target_max )
+        on_apply_damage = [[
+            function ( self, source, who, amount, weapon )
+                if self:parent():parent() == source and source then
                     local source_max = source.attributes.health
-                    source.health.current = source.health.current + math.floor( proportion * source_max )
+                    if source.health.current < (source_max * 2) then
+                        local target_max = who.attributes.health
+                        local proportion = math.min( 0.2, amount/target_max )
+                        source.health.current = math.min(source.health.current + math.floor( proportion * source_max ), (source_max * 2))
+                    end
                 end
             end
         ]],
@@ -909,8 +911,8 @@ register_blueprint "apply_drain_1"
         desc = "drains class skill",
     },
     callbacks = {
-        on_damage = [[
-            function ( unused, weapon, who, amount, source )
+        on_apply_damage = [[
+            function ( self, source, who, amount, weapon )
                 if who and who.data and who.data.is_player then
                     local klass = gtk.get_klass_id( who )
                     local resource
@@ -952,8 +954,8 @@ register_blueprint "apply_drain_4"
         desc = "drains class skill",
     },
     callbacks = {
-        on_damage = [[
-            function ( unused, weapon, who, amount, source )
+        on_apply_damage = [[
+            function ( self, source, who, amount, weapon )
                 if who and who.data and who.data.is_player then
                     local klass = gtk.get_klass_id( who )
                     local resource
@@ -1310,7 +1312,7 @@ function more_exalted_test.on_entity( entity )
     }
     local level = world:get_level()
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, { "mod_exalted_sniper", "mod_exalted_blinding" } )
+        make_exalted( entity, 1, { "mod_exalted_draining", "mod_exalted_blinding" } )
     end
 end
 
