@@ -550,7 +550,7 @@ register_blueprint "mod_exalted_screamer"
                             world:destroy( w )
 
                             for e in level:beings() do
-                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) and not e:child( "alerted" ) and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "asterius_sentry_bot" then
+                                if e ~= actor and e.data and actor.data and e.data.ai and actor.data.ai and e.data.ai.group == actor.data.ai.group and e.data.ai.state ~= "find" and e.target.entity ~= world:get_player() and not e:child( "friendly" ) and not e:child( "alerted" ) and world:get_id( entity ) ~= "mimir_sentry_bot" and world:get_id( entity ) ~= "mimir_sentry_bot_completionist" and world:get_id( entity ) ~= "asterius_sentry_bot" then
                                     nova.log("One enemy is alerted and hunting: "..e:get_name())
                                     e.target.entity = world:get_player()
                                     e.data.ai.state = "find"
@@ -1312,7 +1312,8 @@ function more_exalted_test.on_entity( entity )
     }
     local level = world:get_level()
     if entity.data and entity.data.ai and entity.data.ai.group ~= "player"  then
-        make_exalted( entity, 1, { "mod_exalted_draining", "mod_exalted_blinding" } )
+        make_exalted( entity, 1, { "exalted_kw_gatekeeper" } )
+		make_exalted( entity, 1, { "exalted_kw_unstable" } )
     end
 end
 
