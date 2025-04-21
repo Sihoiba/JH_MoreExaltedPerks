@@ -94,7 +94,7 @@ register_blueprint "apply_dazzled"
         on_apply_damage = [[
             function ( self, source, who, amount, weapon )
                 if who and who.data and who.data.is_player then
-                    if weapon.weapon and weapon.weapon.type == world:hash("melee") then
+                    if weapon and weapon.weapon and weapon.weapon.type == world:hash("melee") then
                         world:add_buff( who, "buff_dazzled_3", 500, true )
                     else
                         world:add_buff( who, "buff_dazzled_1", 250, true )
